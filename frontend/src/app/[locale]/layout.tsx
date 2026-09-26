@@ -3,11 +3,11 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Inter } from "next/font/google";
-import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { hasLocale } from "next-intl";
 import "@/app/globals.css";
 import { cn } from "@/lib/utils";
 import { routing } from "@/i18n/routing";
+import { ThemeProvider } from "@/provider/theme-provider";
 
 const inter = Inter({
     subsets: ["latin", "latin-ext"],
@@ -37,11 +37,11 @@ export default async function LocaleLayout({
     return (
         <html lang={locale} className={cn("h-full antialiased")} suppressHydrationWarning>
             <body className={cn('h-full', inter.className, inter.variable)}>
-                <NextThemesProvider>
+                <ThemeProvider>
                     <NextIntlClientProvider messages={messages}>
                         {children}
                     </NextIntlClientProvider>
-                </NextThemesProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

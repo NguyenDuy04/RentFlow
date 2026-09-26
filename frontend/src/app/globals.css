@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 *,
 *::before,
@@ -19,6 +20,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
@@ -40,14 +43,13 @@ select {
   font: inherit;
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-background: rgb(245, 248, 245);
+  --color-foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  color-scheme: dark;
+  --color-background: rgb(15, 23, 42);
+  --color-foreground: #ededed;
 }
