@@ -1,0 +1,83 @@
+import { clearToken, getToken } from "@/lib/auth";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
+    this.name = "ApiError";
+  }
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getToken();
+  const headers: Record<string, string> = {
+    ...(options.body && !(options.body instanceof FormData)
+      ? { "Content-Type": "application/json" }
+      : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string> | undefined),
+  };
+
+  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+
+  if (res.status === 401) {
+    // Only clear the token here. Do NOT also force-navigate — the caller
+    // (a page's own auth check, or the dashboard layout's isError effect)
+    // already decides where to go. Having two navigation mechanisms fire
+    // for the same 401 (a hard window.location redirect + a soft router
+    // redirect) is what causes visible flicker/loops between pages.
+    clearToken();
+    throw new ApiError("Phiên đăng nhập đã hết hạn", 401);
+  }
+
+  if (!res.ok) {
+    let detail = "Đã có lỗi xảy ra";
+    try {
+      const body = await res.json();
+      if (typeof body.detail === "string") detail = body.detail;
+      else if (Array.isArray(body.detail))
+        detail = body.detail.map((d: { msg: string }) => d.msg).join(", ");
+    } catch {
+      // ignore
+    }
+    throw new ApiError(detail, res.status);
+  }
+
+  if (res.status === 204) return undefined as T;
+
+  const contentType = res.headers.get("content-type") || "";
+  if (contentType.includes("application/pdf")) {
+    return res.blob() as unknown as T;
+  }
+  return res.json() as Promise<T>;
+}
+
+export const api = {
+  get: <T>(path: string) => request<T>(path, { method: "GET" }),
+  post: <T>(path: string, body?: unknown) =>
+    request<T>(path, {
+      method: "POST",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    }),
+  put: <T>(path: string, body?: unknown) =>
+    request<T>(path, {
+      method: "PUT",
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    }),
+  delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
+};
+
+export async function downloadBillPdf(billId: string, billCode: string) {
+  const blob = await api.get<Blob>(`/bills/${billId}/pdf`);
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${billCode}.pdf`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}

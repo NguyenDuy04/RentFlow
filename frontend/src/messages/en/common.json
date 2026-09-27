@@ -1,1 +1,43 @@
-{}
+{
+  "overviews": "Overview",
+  "operational-rental": "The operational status of your rental property.",
+  "dashboard": {
+    "overview": {
+      "totalRooms": "Total Rooms",
+      "occupied": "occupied",
+      "vacant": "vacant",
+
+      "occupancyRate": "Occupancy Rate",
+      "maintenanceRooms": "rooms under maintenance",
+
+      "monthlyRevenue": "Monthly Revenue",
+      "receivedPayments": "Total payments received this month",
+
+      "unpaidBills": "Unpaid Bills",
+      "paymentReminder": "Need follow-up and payment reminders"
+    },
+    "revenueChart": {
+      "title": "Revenue by Month",
+      "months": "{value} months",
+      "revenue": "Revenue",
+      "millionShort": "M"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "noAlerts": "No alerts. Everything is running smoothly.",
+
+      "overdueBill": "Bill {billCode} is overdue",
+      "dueDate": "Due {date}",
+
+      "contractExpiring": "{fullName}'s contract is about to expire",
+      "contractEndDate": "Expires on {date}",
+
+      "roomMaintenance": "Room {roomName} is under maintenance",
+      "roomCode": "Room code: {roomCode}"
+    },
+    "recentActivities": {
+      "title": "Recent Activities",
+      "empty": "No activities yet."
+    }
+  }
+}

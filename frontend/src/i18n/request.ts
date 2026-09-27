@@ -1,5 +1,5 @@
 import { getRequestConfig } from "next-intl/server";
-import { routing } from "./routing";
+import { routing } from "@/i18n/routing";
 
 export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale;
@@ -10,18 +10,17 @@ export default getRequestConfig(async ({ requestLocale }) => {
 
   const [common] = await Promise.all([
     import(`@/messages/${locale}/common.json`).then((m) => m.default),
-    // import(`../../messages/${locale}/auth.json`).then((m) => m.default),
-    // import(`../../messages/${locale}/room.json`).then((m) => m.default),
-    // import(`../../messages/${locale}/tenant.json`).then((m) => m.default),
-    // import(`../../messages/${locale}/billing.json`).then((m) => m.default),
-    // import(`../../messages/${locale}/payment.json`).then((m) => m.default),
+  ]);
+
+  const [topnav] = await Promise.all([
+    import(`@/messages/${locale}/topnav.json`).then((m) => m.default),
   ]);
 
   return {
     locale: locale as string,
     messages: {
       Common: common,
-      // Auth: auth,
+      TopNav: topnav,
       // Room: room,
       // Tenant: tenant,
       // Billing: billing,

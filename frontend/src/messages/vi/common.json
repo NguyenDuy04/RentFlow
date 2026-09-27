@@ -1,1 +1,43 @@
-{}
+{
+  "overviews": "Tổng quan",
+  "operational-rental": "Tình hình hoạt động khu trọ của bạn",
+  "dashboard": {
+    "overview": {
+      "totalRooms": "Tổng số phòng",
+      "occupied": "đang thuê",
+      "vacant": "trống",
+
+      "occupancyRate": "Tỷ lệ lấp đầy",
+      "maintenanceRooms": "phòng đang bảo trì",
+
+      "monthlyRevenue": "Doanh thu tháng này",
+      "receivedPayments": "Tổng thanh toán đã nhận trong tháng",
+
+      "unpaidBills": "Hóa đơn chưa thanh toán",
+      "paymentReminder": "Cần theo dõi & nhắc thanh toán"
+    },
+    "revenueChart": {
+      "title": "Doanh thu theo tháng",
+      "months": "{value} tháng",
+      "revenue": "Doanh thu",
+      "millionShort": "tr"
+    },
+    "alerts": {
+      "title": "Cảnh báo",
+      "noAlerts": "Không có cảnh báo nào. Mọi thứ đều ổn định.",
+
+      "overdueBill": "Hóa đơn {billCode} quá hạn",
+      "dueDate": "hạn {date}",
+
+      "contractExpiring": "Hợp đồng của {fullName} sắp hết hạn",
+      "contractEndDate": "Hết hạn {date}",
+
+      "roomMaintenance": "Phòng {roomName} đang bảo trì",
+      "roomCode": "Mã phòng: {roomCode}"
+    },
+    "recentActivities": {
+      "title": "Hoạt động gần đây",
+      "empty": "Chưa có hoạt động nào."
+    }
+  }
+}
