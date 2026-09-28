@@ -8,6 +8,7 @@ import "@/app/globals.css";
 import { cn } from "@/lib/utils";
 import { routing } from "@/i18n/routing";
 import { ThemeProvider } from "@/provider/theme-provider";
+import { Providers } from "@/components/layout/providers";
 
 const inter = Inter({
     subsets: ["latin", "latin-ext"],
@@ -39,7 +40,7 @@ export default async function LocaleLayout({
             <body className={cn('h-full', inter.className, inter.variable)}>
                 <ThemeProvider>
                     <NextIntlClientProvider messages={messages}>
-                        {children}
+                        <Providers>{children}</Providers>
                     </NextIntlClientProvider>
                 </ThemeProvider>
             </body>

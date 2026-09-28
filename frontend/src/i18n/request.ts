@@ -12,19 +12,8 @@ export default getRequestConfig(async ({ requestLocale }) => {
     import(`@/messages/${locale}/common.json`).then((m) => m.default),
   ]);
 
-  const [topnav] = await Promise.all([
-    import(`@/messages/${locale}/topnav.json`).then((m) => m.default),
-  ]);
-
   return {
     locale: locale as string,
-    messages: {
-      Common: common,
-      TopNav: topnav,
-      // Room: room,
-      // Tenant: tenant,
-      // Billing: billing,
-      // Payment: payment,
-    },
+    messages: common,
   };
 });
