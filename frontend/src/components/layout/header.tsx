@@ -26,12 +26,12 @@ export function Header() {
         </div>
         <span className="text-base font-semibold tracking-tight"> {t("brand")} </span>
       </Link>
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex items-center gap-4">
         <ThemeToggle />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors duration-200 hover:bg-muted active:scale-[0.98]">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"> {initial} </div>
+            <button className="flex items-center gap-2 rounded-md text-sm transition-colors duration-200 hover:bg-muted active:scale-[0.98]">
+              <div className="flex h-8.5 w-8.5 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"> {initial} </div>
               <span className="hidden max-w-40 truncate font-medium sm:inline"> {user?.full_name || t("defaultUser")} </span>
               <ChevronDown className="hidden h-3.5 w-3.5 text-muted-foreground sm:inline" />
             </button>

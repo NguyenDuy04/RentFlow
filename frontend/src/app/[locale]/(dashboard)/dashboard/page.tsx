@@ -5,11 +5,11 @@ import { RecentActivities } from "@/components/dashboard/recent-activities";
 import { useTranslations } from "next-intl";
 
 export default function DashboardPage() {
-    const t = useTranslations();
+    const t = useTranslations("dashboard");
     return (
         <div className="space-y-6">
             <div>
-                <h1 className="text-2xl font-semibold tracking-tight">{t("overview")}</h1>
+                <h1 className="text-2xl font-semibold tracking-tight">{t("overviews")}</h1>
                 <p className="text-sm text-muted-foreground">{t("operational-rental")}</p>
             </div>
 

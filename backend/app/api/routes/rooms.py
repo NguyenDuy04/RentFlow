@@ -1,0 +1,85 @@
+from datetime import datetime, timezone
+
+from fastapi import APIRouter, Depends, HTTPException
+
+from app.api.deps import get_current_user, object_id_or_404
+from app.db.mongodb import rooms_collection, tenants_collection
+from app.models.room import RoomCreate, RoomPublic, RoomUpdate
+from app.models.user import UserInDB
+
+router = APIRouter(prefix="/rooms", tags=["rooms"])
+
+
+@router.get("", response_model=list[RoomPublic])
+async def list_rooms(
+    search: str | None = None,
+    status: str | None = None,
+    current_user: UserInDB = Depends(get_current_user),
+):
+    query: dict = {}
+    if status:
+        query["status"] = status
+    if search:
+        query["$or"] = [
+            {"room_code": {"$regex": search, "$options": "i"}},
+            {"name": {"$regex": search, "$options": "i"}},
+        ]
+    docs = await rooms_collection.find(query).sort("room_code", 1).to_list(length=2000)
+    return [RoomPublic.model_validate(d) for d in docs]
+
+
+@router.post("", response_model=RoomPublic, status_code=201)
+async def create_room(payload: RoomCreate, current_user: UserInDB = Depends(get_current_user)):
+    if await rooms_collection.find_one({"room_code": payload.room_code}):
+        raise HTTPException(status_code=400, detail="Mã phòng đã tồn tại")
+    now = datetime.now(timezone.utc)
+    doc = payload.model_dump()
+    doc["created_at"] = now
+    doc["updated_at"] = now
+    result = await rooms_collection.insert_one(doc)
+    created = await rooms_collection.find_one({"_id": result.inserted_id})
+    return RoomPublic.model_validate(created)
+
+
+@router.get("/{room_id}", response_model=RoomPublic)
+async def get_room(room_id: str, current_user: UserInDB = Depends(get_current_user)):
+    doc = await _get_room_or_404(room_id)
+    return RoomPublic.model_validate(doc)
+
+
+@router.put("/{room_id}", response_model=RoomPublic)
+async def update_room(
+    room_id: str, payload: RoomUpdate, current_user: UserInDB = Depends(get_current_user)
+):
+    oid = object_id_or_404(room_id, "Không tìm thấy phòng")
+    await _get_room_or_404(room_id)
+    update_data = {k: v for k, v in payload.model_dump(exclude_unset=True).items()}
+    if "room_code" in update_data:
+        clash = await rooms_collection.find_one(
+            {"room_code": update_data["room_code"], "_id": {"$ne": oid}}
+        )
+        if clash:
+            raise HTTPException(status_code=400, detail="Mã phòng đã tồn tại")
+    if update_data:
+        update_data["updated_at"] = datetime.now(timezone.utc)
+        await rooms_collection.update_one({"_id": oid}, {"$set": update_data})
+    doc = await rooms_collection.find_one({"_id": oid})
+    return RoomPublic.model_validate(doc)
+
+
+@router.delete("/{room_id}", status_code=204)
+async def delete_room(room_id: str, current_user: UserInDB = Depends(get_current_user)):
+    oid = object_id_or_404(room_id, "Không tìm thấy phòng")
+    await _get_room_or_404(room_id)
+    active_tenant = await tenants_collection.find_one({"room_id": room_id, "status": "active"})
+    if active_tenant:
+        raise HTTPException(status_code=400, detail="Không thể xóa phòng đang có người thuê")
+    await rooms_collection.delete_one({"_id": oid})
+
+
+async def _get_room_or_404(room_id: str) -> dict:
+    oid = object_id_or_404(room_id, "Không tìm thấy phòng")
+    doc = await rooms_collection.find_one({"_id": oid})
+    if not doc:
+        raise HTTPException(status_code=404, detail="Không tìm thấy phòng")
+    return doc

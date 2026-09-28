@@ -2,9 +2,9 @@
   "app": {
     "loading": "Loading RentFlow..."
   },
-  "overviews": "Overview",
-  "operational-rental": "The operational status of your rental property.",
   "dashboard": {
+    "overviews": "Overview",
+    "operational-rental": "The operational status of your rental property.",
     "overview": {
       "totalRooms": "Total Rooms",
       "occupied": "occupied",

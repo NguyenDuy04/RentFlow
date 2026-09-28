@@ -46,7 +46,7 @@ export default function DashboardGroupLayout({ children }: { children: React.Rea
     }
 
     return (
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen h-full">
             <Sidebar className="hidden w-60 shrink-0 lg:flex" />
             <div className="flex min-w-0 flex-1 flex-col">
                 <Header />

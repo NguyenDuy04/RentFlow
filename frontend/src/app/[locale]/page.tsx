@@ -51,8 +51,7 @@ export default function RootPage() {
         <main
             className="flex min-h-screen items-center justify-center bg-background"
             role="status"
-            aria-label={t("loading")}
-        >
+            aria-label={t("loading")}>
             <div className="flex items-center gap-3 text-muted-foreground">
                 <Loader2 className="h-5 w-5 animate-spin text-primary" />
                 <span className="text-sm font-medium">{t("loading")}</span>
