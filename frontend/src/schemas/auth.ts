@@ -31,20 +31,29 @@ export const createRegisterSchema = (messages: {
     });
 export type RegisterInput = z.infer<ReturnType<typeof createRegisterSchema>>;
 
-export const profileSchema = z.object({
-  full_name: z.string().min(1, "Vui lòng nhập họ tên"),
-  phone: z.string().optional().or(z.literal("")),
-});
-export type ProfileInput = z.infer<typeof profileSchema>;
-
-export const changePasswordSchema = z
-  .object({
-    current_password: z.string().min(1, "Vui lòng nhập mật khẩu hiện tại"),
-    new_password: z.string().min(6, "Mật khẩu mới phải có ít nhất 6 ký tự"),
-    confirm_password: z.string().min(1, "Vui lòng xác nhận mật khẩu mới"),
-  })
-  .refine((data) => data.new_password === data.confirm_password, {
-    message: "Mật khẩu xác nhận không khớp",
-    path: ["confirm_password"],
+export const createProfileSchema = (messages: { requiredFullName: string }) =>
+  z.object({
+    full_name: z.string().min(1, messages.requiredFullName),
+    phone: z.string().optional().or(z.literal("")),
   });
-export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+export type ProfileInput = z.infer<ReturnType<typeof createProfileSchema>>;
+
+export const createChangePasswordSchema = (messages: {
+  requiredCurrentPassword: string;
+  passwordMinLength: string;
+  requiredConfirmPassword: string;
+  passwordMismatch: string;
+}) =>
+  z
+    .object({
+      current_password: z.string().min(1, messages.requiredCurrentPassword),
+      new_password: z.string().min(6, messages.passwordMinLength),
+      confirm_password: z.string().min(1, messages.requiredConfirmPassword),
+    })
+    .refine((data) => data.new_password === data.confirm_password, {
+      message: messages.passwordMismatch,
+      path: ["confirm_password"],
+    });
+export type ChangePasswordInput = z.infer<
+  ReturnType<typeof createChangePasswordSchema>
+>;

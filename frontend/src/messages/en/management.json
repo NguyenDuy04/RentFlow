@@ -1,0 +1,284 @@
+{
+  "validation": {
+    "requiredRoomCode": "Please enter a room code",
+    "requiredRoomName": "Please enter a room name",
+    "invalidRentPrice": "Please enter a valid rent price",
+    "minimumOccupants": "At least one occupant is required",
+    "requiredFullName": "Please enter a full name",
+    "requiredPhone": "Please enter a phone number",
+    "invalidEmail": "Please enter a valid email address",
+    "requiredNationalId": "Please enter an ID number",
+    "requiredLeaseStart": "Please select a lease start date",
+    "requiredRoom": "Please select a room",
+    "requiredMonth": "Please select a month",
+    "invalidReading": "Please enter a valid meter reading",
+    "electricityReadingOrder": "The new electricity reading must be greater than or equal to the old reading",
+    "waterReadingOrder": "The new water reading must be greater than or equal to the old reading",
+    "positiveAmount": "Amount must be greater than zero",
+    "invalidPrice": "Please enter a valid price",
+    "requiredPassword": "Please enter your current password",
+    "passwordMinLength": "The new password must be at least 6 characters",
+    "requiredConfirmPassword": "Please confirm your new password",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "common": {
+    "genericError": "Something went wrong",
+    "cancel": "Cancel",
+    "saveChanges": "Save changes",
+    "delete": "Delete",
+    "allStatuses": "All statuses",
+    "allRooms": "All rooms",
+    "allMonths": "All months",
+    "notAssigned": "No room assigned"
+  },
+  "rooms": {
+    "title": "Room management",
+    "description": "Track details and occupancy status for all rooms",
+    "addRoom": "Add room",
+    "allStatuses": "All statuses",
+    "searchPlaceholder": "Search by room code or name...",
+    "addRoomTitle": "Add a room",
+    "status": {
+      "available": "Available",
+      "occupied": "Occupied",
+      "maintenance": "Maintenance"
+    },
+    "form": {
+      "roomCode": "Room code",
+      "name": "Room name",
+      "floor": "Floor",
+      "area": "Area (m²)",
+      "maxOccupants": "Maximum occupants",
+      "rentPrice": "Monthly rent (VND)",
+      "depositRequired": "Required deposit (VND)",
+      "status": "Status",
+      "note": "Note",
+      "save": "Save changes",
+      "create": "Add room",
+      "created": "Room added",
+      "updated": "Room updated"
+    },
+    "table": {
+      "empty": "No rooms yet. Add your first room to get started.",
+      "roomCode": "Room code",
+      "name": "Room name",
+      "floor": "Floor",
+      "area": "Area",
+      "rentPrice": "Rent",
+      "status": "Status",
+      "edit": "Edit room",
+      "delete": "Delete room",
+      "editTitle": "Edit room",
+      "deleteTitle": "Delete room {roomCode}?",
+      "deleteDescription": "This action cannot be undone. Rooms with tenants cannot be deleted.",
+      "deleted": "Room deleted",
+      "deleteFailed": "Unable to delete room"
+    }
+  },
+  "tenants": {
+    "title": "Tenant management",
+    "description": "Tenant details, leases, and room transfer history",
+    "addTenant": "Add tenant",
+    "allStatuses": "All statuses",
+    "searchPlaceholder": "Search by name, phone, or ID...",
+    "addTenantTitle": "Add a tenant",
+    "status": {
+      "active": "Active",
+      "ended": "Ended"
+    },
+    "form": {
+      "fullName": "Full name",
+      "phone": "Phone number",
+      "email": "Email",
+      "nationalId": "ID number",
+      "address": "Address",
+      "room": "Rental room",
+      "roomHelp": "To move a tenant later, use the \"Transfer room\" action.",
+      "leaseStart": "Lease start date",
+      "leaseEnd": "Lease end date",
+      "deposit": "Deposit (VND)",
+      "save": "Save changes",
+      "create": "Add tenant",
+      "created": "Tenant added",
+      "updated": "Tenant information updated"
+    },
+    "table": {
+      "empty": "No tenants yet.",
+      "fullName": "Name",
+      "phone": "Phone",
+      "room": "Room",
+      "leaseStart": "Lease start",
+      "leaseEnd": "Lease end",
+      "status": "Status",
+      "edit": "Edit details",
+      "transfer": "Transfer room",
+      "endContract": "End lease",
+      "delete": "Delete tenant",
+      "editTitle": "Edit tenant details",
+      "deleteTitle": "Delete tenant {name}?",
+      "deleteDescription": "This action cannot be undone.",
+      "deleted": "Tenant deleted",
+      "deleteFailed": "Unable to delete tenant",
+      "endContractSuccess": "Lease ended for {name}",
+      "endContractFailed": "Unable to end lease",
+      "deletedConfirm": "Delete"
+    },
+    "transfer": {
+      "title": "Transfer {name} to another room",
+      "newRoom": "Choose a new room",
+      "placeholder": "Choose a room",
+      "confirm": "Confirm room transfer",
+      "success": "{name} was transferred to a new room",
+      "failed": "Unable to transfer room"
+    }
+  },
+  "meters": {
+    "title": "Utility readings",
+    "description": "Record and track monthly electricity and water readings by room",
+    "addReading": "Add readings",
+    "addTitle": "Add utility readings",
+    "allStatuses": "All statuses",
+    "allRooms": "All rooms",
+    "allMonths": "All months",
+    "form": {
+      "room": "Room",
+      "chooseRoom": "Choose a room",
+      "month": "Month",
+      "autoFilled": "Previous readings were filled from the latest record. Review them before saving.",
+      "electricityOld": "Electricity - old reading",
+      "electricityNew": "Electricity - new reading",
+      "waterOld": "Water - old reading",
+      "waterNew": "Water - new reading",
+      "save": "Save readings",
+      "saved": "Utility readings saved"
+    },
+    "table": {
+      "empty": "No utility readings have been recorded.",
+      "room": "Room",
+      "month": "Month",
+      "electricityReadings": "Electricity (old → new)",
+      "electricityUsage": "Electricity usage",
+      "waterReadings": "Water (old → new)",
+      "waterUsage": "Water usage",
+      "editTitle": "Edit readings - {month}",
+      "updated": "Readings updated"
+    }
+  },
+  "billing": {
+    "title": "Bills",
+    "description": "Create and track monthly rent bills",
+    "create": "Create bill",
+    "createTitle": "Create bills",
+    "allStatuses": "All statuses",
+    "status": {
+      "unpaid": "Unpaid",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "table": {
+      "empty": "No bills yet. Create bills for the current month.",
+      "code": "Bill code",
+      "room": "Room",
+      "month": "Month",
+      "total": "Total",
+      "dueDate": "Due date",
+      "status": "Status",
+      "markPaid": "Mark as paid",
+      "downloadPdf": "Download PDF",
+      "markedPaid": "Bill {billCode} marked as paid"
+    },
+    "generate": {
+      "month": "Month",
+      "room": "Room",
+      "allOccupiedRooms": "All occupied rooms",
+      "help": "Leave blank to create bills in bulk for all occupied rooms with utility readings for this month.",
+      "created": "Created {count} bills for {month}"
+    },
+    "detail": {
+      "status": "Status",
+      "information": "Information",
+      "room": "Room",
+      "tenant": "Tenant",
+      "createdAt": "Created on",
+      "dueDate": "Due date",
+      "costDetails": "Cost breakdown",
+      "roomRent": "Rent",
+      "electricity": "Electricity ({value} kWh)",
+      "water": "Water ({value} m³)",
+      "internet": "Internet fee",
+      "parking": "Parking fee",
+      "cleaning": "Cleaning fee",
+      "other": "Other fees",
+      "total": "Total",
+      "partiallyPaid": "Partially paid",
+      "paymentHistory": "Payment history",
+      "noPayments": "No payments yet.",
+      "recordPayment": "Record payment",
+      "exportPdf": "Export PDF",
+      "pdfFailed": "Unable to download PDF"
+    }
+  },
+  "payments": {
+    "title": "Payments",
+    "description": "History of all recorded payments",
+    "method": {
+      "cash": "Cash",
+      "bankTransfer": "Bank transfer"
+    },
+    "form": {
+      "amount": "Amount (VND)",
+      "method": "Method",
+      "date": "Payment date",
+      "transactionCode": "Transaction code",
+      "optional": "Optional",
+      "submit": "Record payment",
+      "success": "Payment recorded"
+    },
+    "table": {
+      "empty": "No payments have been recorded.",
+      "bill": "Bill",
+      "room": "Room",
+      "amount": "Amount",
+      "method": "Method",
+      "date": "Payment date",
+      "transactionCode": "Transaction code"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Service pricing, personal profile, and security",
+    "tabs": {
+      "pricing": "Service pricing",
+      "profile": "Profile",
+      "password": "Change password"
+    },
+    "pricing": {
+      "title": "Service pricing",
+      "description": "Applies to all bills created after saving.",
+      "electricity": "Electricity price (VND / kWh)",
+      "water": "Water price (VND / m³)",
+      "internet": "Internet fee (VND / month)",
+      "parking": "Parking fee (VND / month)",
+      "cleaning": "Cleaning fee (VND / month)",
+      "other": "Other fee (VND / month)",
+      "save": "Save pricing",
+      "saved": "Service pricing updated"
+    },
+    "profile": {
+      "title": "Personal profile",
+      "email": "Email",
+      "fullName": "Full name",
+      "phone": "Phone number",
+      "save": "Save changes",
+      "saved": "Profile updated"
+    },
+    "password": {
+      "title": "Change password",
+      "current": "Current password",
+      "new": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Change password",
+      "saved": "Password changed successfully"
+    }
+  }
+}

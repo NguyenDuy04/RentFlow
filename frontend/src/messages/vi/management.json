@@ -1,0 +1,284 @@
+{
+  "validation": {
+    "requiredRoomCode": "Vui lòng nhập mã phòng",
+    "requiredRoomName": "Vui lòng nhập tên phòng",
+    "invalidRentPrice": "Giá thuê không hợp lệ",
+    "minimumOccupants": "Tối thiểu 1 người",
+    "requiredFullName": "Vui lòng nhập họ tên",
+    "requiredPhone": "Vui lòng nhập số điện thoại",
+    "invalidEmail": "Email không hợp lệ",
+    "requiredNationalId": "Vui lòng nhập số CCCD",
+    "requiredLeaseStart": "Vui lòng chọn ngày bắt đầu thuê",
+    "requiredRoom": "Vui lòng chọn phòng",
+    "requiredMonth": "Vui lòng chọn tháng",
+    "invalidReading": "Chỉ số không hợp lệ",
+    "electricityReadingOrder": "Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số cũ",
+    "waterReadingOrder": "Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số cũ",
+    "positiveAmount": "Số tiền phải lớn hơn 0",
+    "invalidPrice": "Giá không hợp lệ",
+    "requiredPassword": "Vui lòng nhập mật khẩu hiện tại",
+    "passwordMinLength": "Mật khẩu mới phải có ít nhất 6 ký tự",
+    "requiredConfirmPassword": "Vui lòng xác nhận mật khẩu mới",
+    "passwordMismatch": "Mật khẩu xác nhận không khớp"
+  },
+  "common": {
+    "genericError": "Đã xảy ra lỗi",
+    "cancel": "Hủy",
+    "saveChanges": "Lưu thay đổi",
+    "delete": "Xóa",
+    "allStatuses": "Tất cả trạng thái",
+    "allRooms": "Tất cả phòng",
+    "allMonths": "Tất cả tháng",
+    "notAssigned": "Chưa gán phòng"
+  },
+  "rooms": {
+    "title": "Quản lý phòng",
+    "description": "Theo dõi thông tin và tình trạng thuê của tất cả các phòng",
+    "addRoom": "Thêm phòng",
+    "allStatuses": "Tất cả trạng thái",
+    "searchPlaceholder": "Tìm theo mã phòng, tên phòng...",
+    "addRoomTitle": "Thêm phòng mới",
+    "status": {
+      "available": "Còn trống",
+      "occupied": "Đang thuê",
+      "maintenance": "Bảo trì"
+    },
+    "form": {
+      "roomCode": "Mã phòng",
+      "name": "Tên phòng",
+      "floor": "Tầng",
+      "area": "Diện tích (m²)",
+      "maxOccupants": "Số người tối đa",
+      "rentPrice": "Giá thuê / tháng (VNĐ)",
+      "depositRequired": "Tiền cọc yêu cầu (VNĐ)",
+      "status": "Trạng thái",
+      "note": "Ghi chú",
+      "save": "Lưu thay đổi",
+      "create": "Thêm phòng",
+      "created": "Đã thêm phòng mới",
+      "updated": "Đã cập nhật phòng"
+    },
+    "table": {
+      "empty": "Chưa có phòng nào. Hãy thêm phòng đầu tiên của bạn.",
+      "roomCode": "Mã phòng",
+      "name": "Tên phòng",
+      "floor": "Tầng",
+      "area": "Diện tích",
+      "rentPrice": "Giá thuê",
+      "status": "Trạng thái",
+      "edit": "Sửa phòng",
+      "delete": "Xóa phòng",
+      "editTitle": "Sửa phòng",
+      "deleteTitle": "Xóa phòng {roomCode}?",
+      "deleteDescription": "Hành động này không thể hoàn tác. Phòng đang có người thuê không thể xóa.",
+      "deleted": "Đã xóa phòng",
+      "deleteFailed": "Không thể xóa phòng"
+    }
+  },
+  "tenants": {
+    "title": "Quản lý người thuê",
+    "description": "Thông tin người thuê, hợp đồng và lịch sử chuyển phòng",
+    "addTenant": "Thêm người thuê",
+    "allStatuses": "Tất cả trạng thái",
+    "searchPlaceholder": "Tìm theo tên, SĐT, CCCD...",
+    "addTenantTitle": "Thêm người thuê mới",
+    "status": {
+      "active": "Đang thuê",
+      "ended": "Đã kết thúc"
+    },
+    "form": {
+      "fullName": "Họ và tên",
+      "phone": "Số điện thoại",
+      "email": "Email",
+      "nationalId": "Số CCCD",
+      "address": "Địa chỉ",
+      "room": "Phòng thuê",
+      "roomHelp": "Để chuyển phòng sau này, dùng chức năng \"Chuyển phòng\".",
+      "leaseStart": "Ngày bắt đầu thuê",
+      "leaseEnd": "Ngày kết thúc hợp đồng",
+      "deposit": "Tiền cọc (VNĐ)",
+      "save": "Lưu thay đổi",
+      "create": "Thêm người thuê",
+      "created": "Đã thêm người thuê mới",
+      "updated": "Đã cập nhật thông tin người thuê"
+    },
+    "table": {
+      "empty": "Chưa có người thuê nào.",
+      "fullName": "Họ tên",
+      "phone": "Điện thoại",
+      "room": "Phòng",
+      "leaseStart": "Bắt đầu thuê",
+      "leaseEnd": "Kết thúc hợp đồng",
+      "status": "Trạng thái",
+      "edit": "Sửa thông tin",
+      "transfer": "Chuyển phòng",
+      "endContract": "Kết thúc hợp đồng",
+      "delete": "Xóa người thuê",
+      "editTitle": "Sửa thông tin người thuê",
+      "deleteTitle": "Xóa người thuê {name}?",
+      "deleteDescription": "Hành động này không thể hoàn tác.",
+      "deleted": "Đã xóa người thuê",
+      "deleteFailed": "Không thể xóa người thuê",
+      "endContractSuccess": "Đã kết thúc hợp đồng của {name}",
+      "endContractFailed": "Không thể kết thúc hợp đồng",
+      "deletedConfirm": "Xóa"
+    },
+    "transfer": {
+      "title": "Chuyển phòng cho {name}",
+      "newRoom": "Chọn phòng mới",
+      "placeholder": "Chọn phòng",
+      "confirm": "Xác nhận chuyển phòng",
+      "success": "Đã chuyển {name} sang phòng mới",
+      "failed": "Không thể chuyển phòng"
+    }
+  },
+  "meters": {
+    "title": "Chỉ số điện nước",
+    "description": "Nhập và theo dõi chỉ số điện, nước hàng tháng theo phòng",
+    "addReading": "Nhập chỉ số",
+    "addTitle": "Nhập chỉ số điện nước",
+    "allStatuses": "Tất cả trạng thái",
+    "allRooms": "Tất cả phòng",
+    "allMonths": "Tất cả tháng",
+    "form": {
+      "room": "Phòng",
+      "chooseRoom": "Chọn phòng",
+      "month": "Tháng",
+      "autoFilled": "Đã tự động điền chỉ số cũ theo lần ghi gần nhất. Kiểm tra lại trước khi lưu.",
+      "electricityOld": "Điện - chỉ số cũ",
+      "electricityNew": "Điện - chỉ số mới",
+      "waterOld": "Nước - chỉ số cũ",
+      "waterNew": "Nước - chỉ số mới",
+      "save": "Lưu chỉ số",
+      "saved": "Đã lưu chỉ số điện nước"
+    },
+    "table": {
+      "empty": "Chưa có chỉ số điện nước nào được ghi nhận.",
+      "room": "Phòng",
+      "month": "Tháng",
+      "electricityReadings": "Điện (cũ → mới)",
+      "electricityUsage": "Tiêu thụ điện",
+      "waterReadings": "Nước (cũ → mới)",
+      "waterUsage": "Tiêu thụ nước",
+      "editTitle": "Sửa chỉ số - {month}",
+      "updated": "Đã cập nhật chỉ số"
+    }
+  },
+  "billing": {
+    "title": "Hóa đơn",
+    "description": "Tạo và theo dõi hóa đơn tiền phòng hàng tháng",
+    "create": "Tạo hóa đơn",
+    "createTitle": "Tạo hóa đơn",
+    "allStatuses": "Tất cả trạng thái",
+    "status": {
+      "unpaid": "Chưa thanh toán",
+      "paid": "Đã thanh toán",
+      "overdue": "Quá hạn"
+    },
+    "table": {
+      "empty": "Chưa có hóa đơn nào. Hãy tạo hóa đơn cho tháng hiện tại.",
+      "code": "Mã hóa đơn",
+      "room": "Phòng",
+      "month": "Tháng",
+      "total": "Tổng tiền",
+      "dueDate": "Hạn thanh toán",
+      "status": "Trạng thái",
+      "markPaid": "Đánh dấu đã thanh toán",
+      "downloadPdf": "Tải PDF",
+      "markedPaid": "Đã đánh dấu {billCode} là đã thanh toán"
+    },
+    "generate": {
+      "month": "Tháng",
+      "room": "Phòng",
+      "allOccupiedRooms": "Tất cả phòng đang thuê",
+      "help": "Bỏ trống để tạo hóa đơn hàng loạt cho tất cả phòng đang thuê đã có chỉ số điện nước của tháng này.",
+      "created": "Đã tạo {count} hóa đơn cho {month}"
+    },
+    "detail": {
+      "status": "Trạng thái",
+      "information": "Thông tin",
+      "room": "Phòng",
+      "tenant": "Người thuê",
+      "createdAt": "Ngày tạo",
+      "dueDate": "Hạn thanh toán",
+      "costDetails": "Chi tiết chi phí",
+      "roomRent": "Tiền phòng",
+      "electricity": "Tiền điện ({value} kWh)",
+      "water": "Tiền nước ({value} m³)",
+      "internet": "Phí internet",
+      "parking": "Phí gửi xe",
+      "cleaning": "Phí vệ sinh",
+      "other": "Phí khác",
+      "total": "Tổng cộng",
+      "partiallyPaid": "Đã thanh toán một phần",
+      "paymentHistory": "Lịch sử thanh toán",
+      "noPayments": "Chưa có thanh toán nào.",
+      "recordPayment": "Ghi nhận thanh toán",
+      "exportPdf": "Xuất PDF",
+      "pdfFailed": "Không thể tải PDF"
+    }
+  },
+  "payments": {
+    "title": "Thanh toán",
+    "description": "Lịch sử tất cả các khoản thanh toán đã ghi nhận",
+    "method": {
+      "cash": "Tiền mặt",
+      "bankTransfer": "Chuyển khoản"
+    },
+    "form": {
+      "amount": "Số tiền (VNĐ)",
+      "method": "Phương thức",
+      "date": "Ngày thanh toán",
+      "transactionCode": "Mã giao dịch",
+      "optional": "Tùy chọn",
+      "submit": "Ghi nhận thanh toán",
+      "success": "Đã ghi nhận thanh toán"
+    },
+    "table": {
+      "empty": "Chưa có thanh toán nào được ghi nhận.",
+      "bill": "Hóa đơn",
+      "room": "Phòng",
+      "amount": "Số tiền",
+      "method": "Phương thức",
+      "date": "Ngày thanh toán",
+      "transactionCode": "Mã giao dịch"
+    }
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "description": "Bảng giá dịch vụ, hồ sơ cá nhân và bảo mật",
+    "tabs": {
+      "pricing": "Bảng giá dịch vụ",
+      "profile": "Hồ sơ cá nhân",
+      "password": "Đổi mật khẩu"
+    },
+    "pricing": {
+      "title": "Bảng giá dịch vụ",
+      "description": "Áp dụng cho tất cả hóa đơn được tạo mới sau khi lưu.",
+      "electricity": "Giá điện (VNĐ / kWh)",
+      "water": "Giá nước (VNĐ / m³)",
+      "internet": "Phí internet (VNĐ / tháng)",
+      "parking": "Phí gửi xe (VNĐ / tháng)",
+      "cleaning": "Phí vệ sinh (VNĐ / tháng)",
+      "other": "Phí khác (VNĐ / tháng)",
+      "save": "Lưu bảng giá",
+      "saved": "Đã cập nhật bảng giá dịch vụ"
+    },
+    "profile": {
+      "title": "Hồ sơ cá nhân",
+      "email": "Email",
+      "fullName": "Họ và tên",
+      "phone": "Số điện thoại",
+      "save": "Lưu thay đổi",
+      "saved": "Đã cập nhật hồ sơ"
+    },
+    "password": {
+      "title": "Đổi mật khẩu",
+      "current": "Mật khẩu hiện tại",
+      "new": "Mật khẩu mới",
+      "confirm": "Xác nhận mật khẩu mới",
+      "submit": "Đổi mật khẩu",
+      "saved": "Đã đổi mật khẩu thành công"
+    }
+  }
+}

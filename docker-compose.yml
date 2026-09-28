@@ -1,0 +1,14 @@
+# Local development only: spins up a MongoDB instance so you don't need
+# MongoDB Atlas set up right away. For production, point MONGODB_URI at
+# your Atlas cluster instead and you don't need this file at all.
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - rentflow_mongo_data:/data/db
+
+volumes:
+  rentflow_mongo_data:
