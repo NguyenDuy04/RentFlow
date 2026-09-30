@@ -35,9 +35,30 @@ async def list_tenants(
 @router.post("", response_model=TenantPublic, status_code=201)
 async def create_tenant(payload: TenantCreate, current_user: UserInDB = Depends(get_current_user)):
     if payload.room_id:
-        room = await rooms_collection.find_one({"_id": object_id_or_404(payload.room_id)})
+        room = await rooms_collection.find_one(
+            {"_id": object_id_or_404(payload.room_id)}
+        )
+
         if not room:
-            raise HTTPException(status_code=404, detail="Không tìm thấy phòng")
+            raise HTTPException(
+                status_code=404,
+                detail="Không tìm thấy phòng",
+            )
+
+        max_occupants = room.get("max_occupants", 1)
+
+        current_occupants = await tenants_collection.count_documents(
+            {
+                "room_id": payload.room_id,
+                "status": "active",
+            }
+        )
+
+        if current_occupants >= max_occupants:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Phòng đã đủ số người tối đa ({max_occupants})",
+            )
     now = datetime.now(timezone.utc)
     doc = payload.model_dump()
     doc["created_at"] = now
@@ -88,9 +109,31 @@ async def transfer_room(
     oid = object_id_or_404(tenant_id, "Không tìm thấy người thuê")
     tenant = await _get_tenant_or_404(tenant_id)
     new_room_oid = object_id_or_404(payload.new_room_id, "Không tìm thấy phòng mới")
-    new_room = await rooms_collection.find_one({"_id": new_room_oid})
+
+    new_room = await rooms_collection.find_one(
+    {"_id": new_room_oid}
+)
+
     if not new_room:
-        raise HTTPException(status_code=404, detail="Không tìm thấy phòng mới")
+        raise HTTPException(
+            status_code=404,
+            detail="Không tìm thấy phòng mới",
+        )
+
+    max_occupants = new_room.get("max_occupants", 1)
+
+    current_occupants = await tenants_collection.count_documents(
+        {
+            "room_id": payload.new_room_id,
+            "status": "active",
+        }
+    )
+
+    if current_occupants >= max_occupants:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Phòng đã đủ số người tối đa ({max_occupants})",
+        )
 
     now = datetime.now(timezone.utc)
     old_room_id = tenant.get("room_id")

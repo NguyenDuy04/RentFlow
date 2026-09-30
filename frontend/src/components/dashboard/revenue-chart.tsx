@@ -17,7 +17,7 @@ export function RevenueChart() {
     const chartData = (data || []).map((d) => ({ ...d, label: monthLabel(d.month) }));
 
     return (
-        <Card>
+        <Card className="h-full">
             <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>{t("title")}</CardTitle>
                 <div className="flex gap-1"> {[6, 12].map((m) => (

@@ -9,20 +9,37 @@ import { Select } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useRooms } from "@/hooks/use-rooms";
-import { useTransferRoom } from "@/hooks/use-tenants";
+import { useTenants, useTransferRoom } from "@/hooks/use-tenants";
 import { ApiError } from "@/lib/api-client";
 import type { Tenant } from "@/types";
 import { useTranslations } from "next-intl";
 
 export function TransferRoomDialog({ tenant, onClose }: { tenant: Tenant | null; onClose: () => void }) {
   const t = useTranslations("tenants.transfer");
+  const roomT = useTranslations("rooms.form");
   const [newRoomId, setNewRoomId] = useState("");
   const { data: rooms } = useRooms();
+  const { data: activeTenants, isLoading: areTenantsLoading } = useTenants({ status: "active" });
   const transferRoom = useTransferRoom();
 
+  const activeTenantCounts = new Map<string, number>();
+  for (const activeTenant of activeTenants ?? []) {
+    if (activeTenant.room_id) {
+      activeTenantCounts.set(activeTenant.room_id, (activeTenantCounts.get(activeTenant.room_id) ?? 0) + 1);
+    }
+  }
   const roomOptions = (rooms || [])
     .filter((r) => r.id !== tenant?.room_id)
-    .map((r) => ({ value: r.id, label: `${r.room_code} - ${r.name}` }));
+    .map((room) => {
+      const occupantCount = activeTenantCounts.get(room.id) ?? 0;
+      return {
+        value: room.id,
+        label: `${room.room_code} - ${room.name} · ${roomT("occupantCount", { count: occupantCount, max: room.max_occupants })}`,
+        disabled: occupantCount >= room.max_occupants,
+      };
+    });
+  const selectedRoom = rooms?.find((room) => room.id === newRoomId);
+  const selectedRoomIsFull = selectedRoom && (activeTenantCounts.get(selectedRoom.id) ?? 0) >= selectedRoom.max_occupants;
 
   const handleClose = () => {
     setNewRoomId("");
@@ -30,7 +47,7 @@ export function TransferRoomDialog({ tenant, onClose }: { tenant: Tenant | null;
   };
 
   const handleTransfer = () => {
-    if (!tenant || !newRoomId) return;
+    if (!tenant || !newRoomId || selectedRoomIsFull) return;
     transferRoom.mutate(
       { id: tenant.id, newRoomId },
       {
@@ -55,12 +72,14 @@ export function TransferRoomDialog({ tenant, onClose }: { tenant: Tenant | null;
             id="new_room"
             placeholder={t("placeholder")}
             options={roomOptions}
+            disabled={areTenantsLoading}
             value={newRoomId}
             onChange={(e) => setNewRoomId(e.target.value)}
           />
+          <p className="text-xs text-muted-foreground">{t("capacityHelp")}</p>
         </div>
         <DialogFooter>
-          <Button onClick={handleTransfer} disabled={!newRoomId || transferRoom.isPending}>
+          <Button onClick={handleTransfer} disabled={!newRoomId || areTenantsLoading || selectedRoomIsFull || transferRoom.isPending}>
             {transferRoom.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             {t("confirm")}
           </Button>

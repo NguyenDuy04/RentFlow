@@ -55,9 +55,14 @@ rentflow/
 - Docker (nếu muốn chạy MongoDB local thay vì dùng Atlas ngay)
 
 ### Bước 1 — MongoDB
-
+Nếu dùng Docker
+ - Mở
 ```bash
-docker compose up -d mongo
+sudo docker compose up -d
+```
+- Tắt
+```bash
+sudo docker compose down
 ```
 
 Hoặc bỏ qua bước này và dùng thẳng connection string MongoDB Atlas ở bước 2.

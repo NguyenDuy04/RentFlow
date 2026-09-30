@@ -2,9 +2,9 @@
   "app": {
     "loading": "Đang tải RentFlow..."
   },
-  "overviews": "Tổng quan",
-  "operational-rental": "Tình hình hoạt động khu trọ của bạn",
   "dashboard": {
+    "overviews": "Tổng quan",
+    "operational-rental": "Tình hình hoạt động khu trọ của bạn",
     "overview": {
       "totalRooms": "Tổng số phòng",
       "occupied": "đang thuê",

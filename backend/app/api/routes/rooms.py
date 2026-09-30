@@ -25,7 +25,24 @@ async def list_rooms(
             {"name": {"$regex": search, "$options": "i"}},
         ]
     docs = await rooms_collection.find(query).sort("room_code", 1).to_list(length=2000)
-    return [RoomPublic.model_validate(d) for d in docs]
+
+    result = []
+
+    for room in docs:
+        current_occupants = await tenants_collection.count_documents(
+            {
+                "room_id": str(room["_id"]),
+                "status": "active",
+            }
+        )
+
+        room["current_occupants"] = current_occupants
+
+        result.append(
+            RoomPublic.model_validate(room)
+        )
+
+    return result
 
 
 @router.post("", response_model=RoomPublic, status_code=201)
@@ -44,6 +61,14 @@ async def create_room(payload: RoomCreate, current_user: UserInDB = Depends(get_
 @router.get("/{room_id}", response_model=RoomPublic)
 async def get_room(room_id: str, current_user: UserInDB = Depends(get_current_user)):
     doc = await _get_room_or_404(room_id)
+
+    doc["current_occupants"] = await tenants_collection.count_documents(
+        {
+            "room_id": room_id,
+            "status": "active",
+        }
+    )
+
     return RoomPublic.model_validate(doc)
 
 
@@ -54,6 +79,22 @@ async def update_room(
     oid = object_id_or_404(room_id, "Không tìm thấy phòng")
     await _get_room_or_404(room_id)
     update_data = {k: v for k, v in payload.model_dump(exclude_unset=True).items()}
+    if "max_occupants" in update_data:
+        current_occupants = await tenants_collection.count_documents(
+            {
+                "room_id": room_id,
+                "status": "active",
+            }
+        )
+
+        if update_data["max_occupants"] < current_occupants:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Phòng hiện có {current_occupants} người thuê. "
+                    f"Không thể giảm sức chứa xuống {update_data['max_occupants']}."
+                ),
+            )
     if "room_code" in update_data:
         clash = await rooms_collection.find_one(
             {"room_code": update_data["room_code"], "_id": {"$ne": oid}}

@@ -38,6 +38,9 @@ class RoomUpdate(BaseModel):
 
 class RoomPublic(RoomBase):
     id: PyObjectId = Field(validation_alias="_id")
+
+    current_occupants: int = 0
+
     created_at: datetime
     updated_at: datetime
 

@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/ui/select";
 import { DialogFooter } from "@/components/ui/dialog";
 import { createTenantSchema, type TenantFormInput, type TenantInput } from "@/schemas/tenant";
-import { useCreateTenant, useUpdateTenant } from "@/hooks/use-tenants";
+import { useCreateTenant, useTenants, useUpdateTenant } from "@/hooks/use-tenants";
 import { useRooms } from "@/hooks/use-rooms";
 import { ApiError } from "@/lib/api-client";
 import type { Tenant } from "@/types";
@@ -21,6 +21,7 @@ import { useTranslations } from "next-intl";
 export function TenantForm({ tenant, onSuccess }: { tenant?: Tenant; onSuccess: () => void }) {
   const t = useTranslations("tenants");
   const roomT = useTranslations("rooms.status");
+  const roomFormT = useTranslations("rooms.form");
   const validation = useTranslations("validation");
   const common = useTranslations("common");
   const tenantSchema = createTenantSchema({
@@ -32,14 +33,25 @@ export function TenantForm({ tenant, onSuccess }: { tenant?: Tenant; onSuccess: 
   });
   const isEdit = !!tenant;
   const { data: rooms } = useRooms();
+  const { data: activeTenants, isLoading: areTenantsLoading } = useTenants({ status: "active" });
   const createTenant = useCreateTenant();
   const updateTenant = useUpdateTenant();
   const pending = createTenant.isPending || updateTenant.isPending;
 
-  const roomOptions = (rooms || []).map((r) => ({
-    value: r.id,
-    label: `${r.room_code} - ${r.name} (${roomT(r.status)})`,
-  }));
+  const activeTenantCounts = new Map<string, number>();
+  for (const activeTenant of activeTenants ?? []) {
+    if (activeTenant.room_id) {
+      activeTenantCounts.set(activeTenant.room_id, (activeTenantCounts.get(activeTenant.room_id) ?? 0) + 1);
+    }
+  }
+  const roomOptions = (rooms || []).map((room) => {
+    const occupantCount = activeTenantCounts.get(room.id) ?? 0;
+    return {
+      value: room.id,
+      label: `${room.room_code} - ${room.name} (${roomT(room.status)}) · ${roomFormT("occupantCount", { count: occupantCount, max: room.max_occupants })}`,
+      disabled: occupantCount >= room.max_occupants,
+    };
+  });
 
   const {
     register,
@@ -123,7 +135,7 @@ export function TenantForm({ tenant, onSuccess }: { tenant?: Tenant; onSuccess: 
       {!isEdit && (
         <div className="space-y-1.5">
           <Label htmlFor="room_id">{t("form.room")}</Label>
-          <Select id="room_id" placeholder={common("notAssigned")} options={roomOptions} {...register("room_id")} />
+          <Select id="room_id" placeholder={common("notAssigned")} options={roomOptions} {...register("room_id")} disabled={areTenantsLoading} />
           <p className="text-xs text-muted-foreground">{t("form.roomHelp")}</p>
         </div>
       )}

@@ -15,7 +15,7 @@ export default function DashboardPage() {
 
             <OverviewCards />
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 lg:auto-rows-85 lg:grid-cols-3">
                 <div className="lg:col-span-2">
                     <RevenueChart />
                 </div>
