@@ -1,4 +1,4 @@
-import { clearToken, getToken } from "@/lib/auth";
+import { clearLegacyToken } from "@/lib/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
@@ -12,24 +12,21 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = getToken();
+  clearLegacyToken();
   const headers: Record<string, string> = {
     ...(options.body && !(options.body instanceof FormData)
       ? { "Content-Type": "application/json" }
       : {}),
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(options.headers as Record<string, string> | undefined),
   };
 
-  const res = await fetch(`${API_URL}${path}`, { ...options, headers });
+  const res = await fetch(`${API_URL}${path}`, {
+    ...options,
+    headers,
+    credentials: "include",
+  });
 
   if (res.status === 401) {
-    // Only clear the token here. Do NOT also force-navigate — the caller
-    // (a page's own auth check, or the dashboard layout's isError effect)
-    // already decides where to go. Having two navigation mechanisms fire
-    // for the same 401 (a hard window.location redirect + a soft router
-    // redirect) is what causes visible flicker/loops between pages.
-    clearToken();
     throw new ApiError("Phiên đăng nhập đã hết hạn", 401);
   }
 

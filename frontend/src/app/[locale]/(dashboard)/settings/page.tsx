@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
@@ -11,11 +11,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 
 import { createPricingSchema, type PricingFormInput, type PricingInput } from "@/schemas/pricing";
 import { createProfileSchema, type ProfileInput, createChangePasswordSchema, type ChangePasswordInput } from "@/schemas/auth";
+import {
+  useBankAccountSettings,
+  useUpdateBankAccountSettings,
+  useVietQrBanks,
+} from "@/hooks/use-payments";
 import { usePricing, useUpdatePricing } from "@/hooks/use-pricing";
 import { useMe, useUpdateProfile, useChangePassword } from "@/hooks/use-auth";
+import { createBankAccountSchema, type BankAccountFormInput, type BankAccountInput } from "@/schemas/payment";
 import { ApiError } from "@/lib/api-client";
 import { useTranslations } from "next-intl";
 
@@ -31,12 +38,16 @@ export default function SettingsPage() {
       <Tabs defaultValue="pricing">
         <TabsList>
           <TabsTrigger value="pricing">{t("tabs.pricing")}</TabsTrigger>
+          <TabsTrigger value="bankAccount">{t("tabs.bankAccount")}</TabsTrigger>
           <TabsTrigger value="profile">{t("tabs.profile")}</TabsTrigger>
           <TabsTrigger value="password">{t("tabs.password")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pricing">
           <PricingSettings />
+        </TabsContent>
+        <TabsContent value="bankAccount">
+          <BankAccountSettingsForm />
         </TabsContent>
         <TabsContent value="profile">
           <ProfileSettings />
@@ -46,6 +57,103 @@ export default function SettingsPage() {
         </TabsContent>
       </Tabs>
     </div>
+  );
+}
+
+function BankAccountSettingsForm() {
+  const t = useTranslations("settings.bankAccount");
+  const common = useTranslations("common");
+  const bankAccountSchema = createBankAccountSchema({
+    invalidBank: t("invalidBank"),
+    invalidAccountNumber: t("invalidAccountNumber"),
+    invalidAccountName: t("invalidAccountName"),
+  });
+  const { data: bankAccount, isLoading } = useBankAccountSettings();
+  const banks = useVietQrBanks();
+  const updateBankAccount = useUpdateBankAccountSettings();
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm<BankAccountFormInput, unknown, BankAccountInput>({
+    resolver: zodResolver(bankAccountSchema),
+  });
+
+  useEffect(() => {
+    if (bankAccount) reset({ ...bankAccount, bank_name: bankAccount.bank_name || "" });
+  }, [bankAccount, reset]);
+
+  const selectedBankBin = useWatch({ control, name: "bank_bin" });
+  const selectedBank = banks.data?.find((bank) => bank.bin === selectedBankBin);
+
+  useEffect(() => {
+    if (bankAccount?.bank_bin && !bankAccount.bank_name && selectedBank) {
+      setValue("bank_name", selectedBank.shortName);
+    }
+  }, [bankAccount, selectedBank, setValue]);
+
+  const bankBinField = register("bank_bin", {
+    onChange: (event) => {
+      const bank = banks.data?.find((item) => item.bin === event.target.value);
+      setValue("bank_name", bank?.shortName ?? "", { shouldValidate: true });
+    },
+  });
+
+  const onSubmit = (data: BankAccountInput) => {
+    updateBankAccount.mutate(data, {
+      onSuccess: () => toast.success(t("saved")),
+      onError: (err) => toast.error(err instanceof ApiError ? err.message : common("genericError")),
+    });
+  };
+
+  if (isLoading) return null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="max-w-md space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="bank_bin">{t("bank")}</Label>
+            <Select
+              id="bank_bin"
+              options={(banks.data ?? []).map((bank) => ({
+                value: bank.bin,
+                label: bank.shortName,
+              }))}
+              placeholder={banks.isLoading ? t("loadingBanks") : t("chooseBank")}
+              disabled={banks.isLoading || banks.isError}
+              {...bankBinField}
+            />
+            {selectedBank && <p className="text-xs text-muted-foreground">{selectedBank.name}</p>}
+            {banks.isError && <p className="text-xs text-destructive">{t("banksLoadFailed")}</p>}
+            <input type="hidden" {...register("bank_name")} />
+            {errors.bank_bin && <p className="text-xs text-destructive">{errors.bank_bin.message}</p>}
+            {errors.bank_name && <p className="text-xs text-destructive">{errors.bank_name.message}</p>}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="account_number">{t("accountNumber")}</Label>
+            <Input id="account_number" inputMode="numeric" {...register("account_number")} />
+            {errors.account_number && <p className="text-xs text-destructive">{errors.account_number.message}</p>}
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="account_name">{t("accountName")}</Label>
+            <Input id="account_name" autoComplete="off" {...register("account_name")} />
+            {errors.account_name && <p className="text-xs text-destructive">{errors.account_name.message}</p>}
+          </div>
+          <Button type="submit" disabled={updateBankAccount.isPending}>
+            {updateBankAccount.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {t("save")}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 

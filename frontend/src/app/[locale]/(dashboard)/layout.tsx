@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Loader2 } from "lucide-react";
 
@@ -8,36 +8,17 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { PageTransition } from "@/components/layout/page-transition";
-import { getToken } from "@/lib/auth";
 import { useMe } from "@/hooks/use-auth";
-
-const subscribeToToken = (callback: () => void) => {
-    window.addEventListener("storage", callback);
-    return () => window.removeEventListener("storage", callback);
-};
-
-const getTokenSnapshot = () => Boolean(getToken());
-const getServerTokenSnapshot = () => false;
 
 export default function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const hasToken = useSyncExternalStore(
-        subscribeToToken,
-        getTokenSnapshot,
-        getServerTokenSnapshot,
-    );
-
-    useEffect(() => {
-        if (!hasToken) router.replace("/login");
-    }, [hasToken, router]);
-
-    const { isError, isPending } = useMe(hasToken);
+    const { isError, isPending } = useMe();
 
     useEffect(() => {
         if (isError) router.replace("/login");
     }, [isError, router]);
 
-    if (!hasToken || isPending) {
+    if (isError || isPending) {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

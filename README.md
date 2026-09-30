@@ -55,12 +55,17 @@ rentflow/
 - Docker (nếu muốn chạy MongoDB local thay vì dùng Atlas ngay)
 
 ### Bước 1 — MongoDB
+
 Nếu dùng Docker
- - Mở
+
+- Mở
+
 ```bash
 sudo docker compose up -d
 ```
+
 - Tắt
+
 ```bash
 sudo docker compose down
 ```
@@ -130,7 +135,7 @@ Bộ test dùng MongoDB giả lập trong bộ nhớ (`mongomock-motor`) nên kh
 | Tenant Management (CRUD, chuyển phòng, kết thúc hợp đồng, tự động cập nhật trạng thái phòng)                              | ✅         |
 | Meter Reading (nhập chỉ số, auto-fill từ tháng trước, tự tính tiêu thụ, lưu lịch sử)                                      | ✅         |
 | Billing (tự động tính tiền phòng + điện + nước + phí dịch vụ, chặn tạo trùng, xuất PDF tiếng Việt có dấu)                 | ✅         |
-| Payment (ghi nhận thanh toán, hỗ trợ thanh toán một phần, tự động đánh dấu hóa đơn đã thanh toán, lịch sử)                | ✅         |
+| Payment (ghi nhận thanh toán, VietQR, xác nhận chuyển khoản thủ công, thanh toán một phần, lịch sử)                       | ✅         |
 | Dashboard (overview cards, cảnh báo quá hạn/sắp hết hạn HĐ/đang bảo trì, biểu đồ doanh thu 6/12 tháng, hoạt động gần đây) | ✅         |
 
 Các mục **không bắt buộc trong MVP** theo spec (Email, QR Payment, SMS, AI Features, Multi-Tenant System) chưa được triển khai, đúng như phạm vi đề ra.
@@ -140,16 +145,10 @@ Các mục **không bắt buộc trong MVP** theo spec (Email, QR Payment, SMS, 
 ## 5. Một số quyết định thiết kế cần lưu ý
 
 - **Xác thực chủ trọ**: RentFlow là hệ thống single-tenant (một tài khoản chủ trọ duy nhất). Tài khoản đầu tiên có thể tạo bằng **một trong hai cách**: (1) chạy `scripts/seed.py`, hoặc (2) mở `/register` trên frontend — đây là màn "thiết lập lần đầu" kiểu WordPress/Nextcloud, chỉ hoạt động khi hệ thống _chưa có_ tài khoản nào (`GET /api/auth/setup-status`); sau khi đã có một tài khoản, `POST /api/auth/register` luôn trả về 403. Không có đăng ký công khai nhiều người dùng.
-- **Token lưu ở đâu**: JWT lưu ở `localStorage` nếu tick "Ghi nhớ đăng nhập", ngược lại lưu ở `sessionStorage` (mất khi đóng tab/trình duyệt). Đây là cách đơn giản, phù hợp MVP; nếu cần bảo mật cao hơn cho production thật, nên chuyển sang httpOnly cookie + refresh token.
+- **Token lưu ở đâu**: JWT được lưu trong cookie `HttpOnly`, `SameSite=Lax`; JavaScript không thể đọc token. Cookie chỉ tồn tại trong phiên trình duyệt nếu không chọn "Ghi nhớ đăng nhập", và có hạn 30 ngày nếu chọn. Khi triển khai frontend/backend trên hai site khác nhau, đặt `AUTH_COOKIE_SAMESITE=none` và `AUTH_COOKIE_SECURE=true` trên backend; luôn bật `AUTH_COOKIE_SECURE=true` khi backend dùng HTTPS.
 - **Hạn thanh toán hóa đơn**: mặc định 10 ngày kể từ ngày tạo hóa đơn (`DUE_DAYS` trong `backend/app/api/routes/bills.py`) — chỉnh lại nếu chủ trọ có quy định khác.
 - **Doanh thu tháng hiện tại** trên dashboard: tính theo _tiền đã thực thu_ (tổng các khoản `Payment` trong tháng), không phải tổng hóa đơn đã tạo — phản ánh dòng tiền thực tế.
 - **"Quá hạn"** không phải một trạng thái lưu trong DB mà được tính động (`unpaid` + qua `due_date`) — luôn chính xác theo thời gian thực, không cần cron job.
+- **VietQR**: nhập mã BIN 6 số, số tài khoản và tên chủ tài khoản trong **Cài đặt → Tài khoản nhận tiền**. Tại chi tiết bill chưa thanh toán, chọn **Tạo VietQR** rồi gửi ảnh QR cho khách; khách tự chuyển khoản với số tiền và mã bill được điền sẵn. Chủ trọ cần kiểm tra giao dịch trong ứng dụng ngân hàng và chọn **Xác nhận đã nhận tiền** để ghi payment. QR được tạo qua dịch vụ ảnh `img.vietqr.io`; không có webhook hay tự động đối soát.
 - **Phòng nhiều người ở chung**: `max_occupants` được lưu nhưng chưa enforce giới hạn số người thuê/phòng khi thêm người thuê mới — trạng thái phòng (`occupied`/`available`) tự cập nhật dựa trên còn tenant đang active hay không.
 - **Điều hướng responsive**: màn hình `lg` (≥1024px) trở lên dùng sidebar cố định bên trái; dưới `lg` (điện thoại, tablet đứng) dùng bottom navigation cố định (4 mục chính + nút "Thêm") để thao tác bằng ngón cái thuận tiện hơn menu trượt.
-
-## 6. Bước tiếp theo (Chưa làm):
-
-- Thêm rate-limiting cho `/api/auth/login`.
-- Chuyển JWT sang httpOnly cookie nếu deploy thật cho nhiều người dùng.
-- Thêm enforcement cho `max_occupants` khi gán người thuê vào phòng.
-- Tích hợp VietQR, gửi hóa đơn qua Email/Zalo (đã liệt kê là Future Enhancements trong spec).

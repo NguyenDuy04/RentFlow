@@ -3,7 +3,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client";
-import { clearToken, saveToken } from "@/lib/auth";
 import type { User } from "@/types";
 import type {
   ChangePasswordInput,
@@ -35,12 +34,11 @@ export function useRegister() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: RegisterInput) => {
-      const res = await api.post<{ access_token: string }>("/auth/register", {
+      const res = await api.post<{ message: string }>("/auth/register", {
         full_name: input.full_name,
         email: input.email,
         password: input.password,
       });
-      saveToken(res.access_token, true);
       return res;
     },
     onSuccess: () => {
@@ -55,12 +53,11 @@ export function useLogin() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: LoginInput) => {
-      const res = await api.post<{ access_token: string }>("/auth/login", {
+      const res = await api.post<{ message: string }>("/auth/login", {
         email: input.email,
         password: input.password,
         remember: input.remember,
       });
-      saveToken(res.access_token, input.remember);
       return res;
     },
     onSuccess: () => {
@@ -73,8 +70,12 @@ export function useLogin() {
 export function useLogout() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  return () => {
-    clearToken();
+  return async () => {
+    try {
+      await api.post<void>("/auth/logout");
+    } catch {
+      // Continue to clear the local session state if the API is unavailable.
+    }
     queryClient.clear();
     router.push("/login");
   };

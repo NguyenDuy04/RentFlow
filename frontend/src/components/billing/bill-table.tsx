@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { Link } from "@/i18n/navigation";
-import { Download, Receipt, CheckCircle2 } from "lucide-react";
+import { Download, Receipt, CheckCircle2, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDownloadBillPdf, useUpdateBillStatus } from "@/hooks/use-bills";
+import { VietQrDialog } from "@/components/billing/vietqr-dialog";
 import { formatCurrency, formatDate, monthLabel } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
 import type { Bill, Room } from "@/types";
@@ -27,6 +29,7 @@ export function BillTable({
   const common = useTranslations("common");
   const downloadPdf = useDownloadBillPdf();
   const updateStatus = useUpdateBillStatus();
+  const [vietQrBillId, setVietQrBillId] = useState<string | null>(null);
 
   const markPaid = (bill: Bill) => {
     updateStatus.mutate(
@@ -74,7 +77,7 @@ export function BillTable({
           <TableHead>{t("table.total")}</TableHead>
           <TableHead>{t("table.dueDate")}</TableHead>
           <TableHead>{t("table.status")}</TableHead>
-          <TableHead className="w-32" />
+          <TableHead className="w-48" />
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -103,9 +106,15 @@ export function BillTable({
               <TableCell>
                 <div className="flex justify-end gap-1">
                   {bill.status === "unpaid" && (
-                    <Button variant="ghost" size="icon" title={t("table.markPaid")} onClick={() => markPaid(bill)}>
-                      <CheckCircle2 className="h-4 w-4" />
-                    </Button>
+                    <>
+                      <Button variant="ghost" size="sm" title={t("vietqr.generate")} onClick={() => setVietQrBillId(bill.id)}>
+                        <QrCode className="h-4 w-4" />
+                        {t("vietqr.generate")}
+                      </Button>
+                      <Button variant="ghost" size="icon" title={t("table.markPaid")} onClick={() => markPaid(bill)}>
+                        <CheckCircle2 className="h-4 w-4" />
+                      </Button>
+                    </>
                   )}
                   <Button variant="ghost" size="icon" title={t("table.downloadPdf")} onClick={() => handleDownload(bill)}>
                     <Download className="h-4 w-4" />
@@ -116,6 +125,13 @@ export function BillTable({
           );
         })}
       </TableBody>
+      <VietQrDialog
+        open={vietQrBillId !== null}
+        onOpenChange={(open) => {
+          if (!open) setVietQrBillId(null);
+        }}
+        billId={vietQrBillId ?? ""}
+      />
     </Table>
   );
 }

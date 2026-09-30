@@ -1,19 +1,23 @@
 import random
 import string
 from datetime import datetime, timedelta, timezone
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 
 from app.api.deps import get_current_user, object_id_or_404
 from app.db.mongodb import (
+    bank_account_settings_collection,
     bills_collection,
     meters_collection,
+    payments_collection,
     pricing_collection,
     rooms_collection,
     tenants_collection,
 )
 from app.models.bill import BillPublic, BillStatusUpdate, GenerateBillRequest
+from app.models.payment import VietQrResponse
 from app.models.user import UserInDB
 from app.services.billing import compute_bill_amounts
 from app.services.pdf import generate_bill_pdf
@@ -60,6 +64,47 @@ async def list_bills(
 async def get_bill(bill_id: str, current_user: UserInDB = Depends(get_current_user)):
     doc = await _get_bill_or_404(bill_id)
     return BillPublic.model_validate(_with_overdue(doc))
+
+
+@router.get("/{bill_id}/vietqr", response_model=VietQrResponse)
+async def get_bill_vietqr(bill_id: str, current_user: UserInDB = Depends(get_current_user)):
+    bill = await _get_bill_or_404(bill_id)
+    bank = await bank_account_settings_collection.find_one({"_id": "primary"})
+    if not bank:
+        raise HTTPException(status_code=400, detail="Chưa cấu hình tài khoản nhận tiền")
+
+    payments = await payments_collection.aggregate(
+        [
+            {"$match": {"bill_id": bill_id}},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}},
+        ]
+    ).to_list(length=1)
+    total_paid = payments[0]["total"] if payments else 0
+    amount_due = int(round(bill["total_amount"] - total_paid))
+    if amount_due <= 0 or bill["status"] == "paid":
+        raise HTTPException(status_code=409, detail="Hóa đơn đã được thanh toán")
+
+    transfer_content = bill["bill_code"]
+    qr_path = f"{bank['bank_bin']}-{bank['account_number']}"
+    qr_url = (
+        f"https://img.vietqr.io/image/{qr_path}-compact2.png?"
+        + urlencode(
+            {
+                "amount": amount_due,
+                "addInfo": transfer_content,
+                "accountName": bank["account_name"],
+            }
+        )
+    )
+    return VietQrResponse(
+        amount=amount_due,
+        transfer_content=transfer_content,
+        bank_bin=bank["bank_bin"],
+        bank_name=bank.get("bank_name", ""),
+        account_number=bank["account_number"],
+        account_name=bank["account_name"],
+        qr_url=qr_url,
+    )
 
 
 @router.post("/generate", response_model=list[BillPublic], status_code=201)

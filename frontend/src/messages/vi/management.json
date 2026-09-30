@@ -218,6 +218,26 @@
       "recordPayment": "Ghi nhận thanh toán",
       "exportPdf": "Xuất PDF",
       "pdfFailed": "Không thể tải PDF"
+    },
+    "vietqr": {
+      "generate": "Tạo VietQR",
+      "title": "QR chuyển khoản",
+      "description": "Khách quét mã trong ứng dụng ngân hàng và tự chuyển khoản. Hóa đơn chỉ được ghi nhận sau khi bạn xác nhận đã nhận tiền.",
+      "amount": "Số tiền cần chuyển",
+      "bank": "Ngân hàng",
+      "accountName": "Chủ tài khoản",
+      "accountNumber": "Số tài khoản",
+      "transferContent": "Nội dung chuyển khoản",
+      "copy": "Sao chép nội dung",
+      "copied": "Đã sao chép nội dung chuyển khoản",
+      "copyFailed": "Không thể sao chép nội dung",
+      "openQr": "Mở ảnh QR",
+      "imageAlt": "Mã VietQR thanh toán hóa đơn",
+      "confirmTransfer": "Xác nhận đã nhận tiền",
+      "confirmTitle": "Xác nhận chuyển khoản",
+      "confirmDescription": "Đối chiếu giao dịch ngân hàng trước khi ghi nhận khoản thanh toán.",
+      "backToQr": "Quay lại QR",
+      "error": "Không thể tạo QR cho hóa đơn này. Hãy kiểm tra cấu hình tài khoản ngân hàng."
     }
   },
   "payments": {
@@ -251,6 +271,7 @@
     "description": "Bảng giá dịch vụ, hồ sơ cá nhân và bảo mật",
     "tabs": {
       "pricing": "Bảng giá dịch vụ",
+      "bankAccount": "Tài khoản nhận tiền",
       "profile": "Hồ sơ cá nhân",
       "password": "Đổi mật khẩu"
     },
@@ -265,6 +286,21 @@
       "other": "Phí khác (VNĐ / tháng)",
       "save": "Lưu bảng giá",
       "saved": "Đã cập nhật bảng giá dịch vụ"
+    },
+    "bankAccount": {
+      "title": "Tài khoản nhận chuyển khoản",
+      "description": "Thông tin này được dùng để tạo VietQR cho hóa đơn; đối chiếu giao dịch ngân hàng và xác nhận thủ công.",
+      "bank": "Ngân hàng",
+      "chooseBank": "Chọn ngân hàng",
+      "loadingBanks": "Đang tải ngân hàng...",
+      "banksLoadFailed": "Không tải được danh sách ngân hàng. Hãy thử tải lại trang.",
+      "accountNumber": "Số tài khoản",
+      "accountName": "Tên chủ tài khoản",
+      "save": "Lưu tài khoản",
+      "saved": "Đã cập nhật tài khoản nhận tiền",
+      "invalidBank": "Vui lòng chọn ngân hàng hỗ trợ VietQR",
+      "invalidAccountNumber": "Số tài khoản chỉ gồm tối đa 20 chữ số",
+      "invalidAccountName": "Tên chủ tài khoản cần ít nhất 2 ký tự"
     },
     "profile": {
       "title": "Hồ sơ cá nhân",

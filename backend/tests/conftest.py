@@ -25,6 +25,8 @@ mongodb_module.meters_collection = _mock_db["meter_readings"]
 mongodb_module.pricing_collection = _mock_db["pricing_config"]
 mongodb_module.bills_collection = _mock_db["bills"]
 mongodb_module.payments_collection = _mock_db["payments"]
+mongodb_module.bank_account_settings_collection = _mock_db["bank_account_settings"]
+mongodb_module.login_attempts_collection = _mock_db["login_attempts"]
 
 from app.core.security import hash_password  # noqa: E402
 from app.main import app  # noqa: E402
@@ -37,6 +39,8 @@ ALL_COLLECTIONS = [
     mongodb_module.pricing_collection,
     mongodb_module.bills_collection,
     mongodb_module.payments_collection,
+    mongodb_module.bank_account_settings_collection,
+    mongodb_module.login_attempts_collection,
 ]
 
 ADMIN_EMAIL = "admin@rentflow.app"
@@ -71,5 +75,5 @@ async def auth_headers(client):
         }
     )
     r = await client.post("/api/auth/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
-    token = r.json()["access_token"]
-    return {"Authorization": f"Bearer {token}"}
+    assert r.status_code == 200
+    return {}

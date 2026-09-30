@@ -57,8 +57,8 @@ async def create_meter(
         .to_list(length=1)
     )
 
-    electricity_old = 0
-    water_old = 0
+    electricity_old = payload.electricity_old
+    water_old = payload.water_old
 
     if latest:
         electricity_old = latest[0]["electricity_new"]
@@ -66,13 +66,13 @@ async def create_meter(
 
     if payload.electricity_new < electricity_old:
         raise HTTPException(
-            status_code=400,
+            status_code=422,
             detail="Chỉ số điện mới phải lớn hơn hoặc bằng chỉ số cũ",
         )
 
     if payload.water_new < water_old:
         raise HTTPException(
-            status_code=400,
+            status_code=422,
             detail="Chỉ số nước mới phải lớn hơn hoặc bằng chỉ số cũ",
         )
 

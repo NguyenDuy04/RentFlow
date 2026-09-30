@@ -1,20 +1,17 @@
 from bson import ObjectId
 from bson.errors import InvalidId
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import Cookie, HTTPException, status
 
+from app.core.config import settings
 from app.core.security import decode_access_token
 from app.db.mongodb import users_collection
 from app.models.user import UserInDB
 
-bearer_scheme = HTTPBearer(auto_error=True)
-
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    token: str | None = Cookie(default=None, alias=settings.auth_cookie_name),
 ) -> UserInDB:
-    token = credentials.credentials
-    user_id = decode_access_token(token)
+    user_id = decode_access_token(token) if token else None
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

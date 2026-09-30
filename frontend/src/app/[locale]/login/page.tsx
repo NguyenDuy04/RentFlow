@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { createLoginSchema, type LoginInput } from "@/schemas/auth";
 import { useLogin } from "@/hooks/use-auth";
-import { getToken, clearToken } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api-client";
 import { useTranslations } from "next-intl";
 
@@ -28,14 +27,10 @@ export default function LoginPage() {
   });
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return;
-    // Đừng chỉ dựa vào "có token" — token có thể đã hết hạn. Nếu vậy, xóa
-    // và ở lại trang login thay vì bật qua /dashboard rồi bị đá ngược lại.
     api
       .get("/auth/me")
       .then(() => router.replace("/dashboard"))
-      .catch(() => clearToken());
+      .catch(() => undefined);
   }, [router]);
 
   const {

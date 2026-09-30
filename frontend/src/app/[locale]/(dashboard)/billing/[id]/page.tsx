@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
-import { ArrowLeft, Download, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, Loader2, QrCode } from "lucide-react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import { useRooms } from "@/hooks/use-rooms";
 import { useTenants } from "@/hooks/use-tenants";
 import { formatCurrency, formatDate, formatDateTime, monthLabel } from "@/lib/utils";
 import { PaymentForm } from "@/components/payments/payment-form";
+import { VietQrDialog } from "@/components/billing/vietqr-dialog";
 import { useTranslations } from "next-intl";
 
 export default function BillDetailPage() {
@@ -25,6 +26,7 @@ export default function BillDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [vietQrOpen, setVietQrOpen] = useState(false);
 
   const { data: bill, isLoading } = useBill(params.id);
   const { data: payments } = usePayments(params.id);
@@ -150,7 +152,13 @@ export default function BillDetailPage() {
 
       <div className="flex flex-wrap gap-2">
         {bill.status === "unpaid" && (
-          <Button onClick={() => setPaymentOpen(true)}>{t("detail.recordPayment")}</Button>
+          <>
+            <Button variant="outline" onClick={() => setVietQrOpen(true)}>
+              <QrCode className="h-4 w-4" />
+              {t("vietqr.generate")}
+            </Button>
+            <Button onClick={() => setPaymentOpen(true)}>{t("detail.recordPayment")}</Button>
+          </>
         )}
         <Button
           variant="outline"
@@ -179,6 +187,7 @@ export default function BillDetailPage() {
           />
         </DialogContent>
       </Dialog>
+      <VietQrDialog open={vietQrOpen} onOpenChange={setVietQrOpen} billId={bill.id} />
     </div>
   );
 }

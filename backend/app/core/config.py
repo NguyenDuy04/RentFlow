@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24            # 1 day (not "remember me")
     access_token_expire_minutes_remember: int = 60 * 24 * 30  # 30 days ("remember me")
+    login_attempt_window_hours: int = 24
+    login_temporary_lock_minutes: int = 60
+    auth_cookie_name: str = "rentflow_access_token"
+    auth_cookie_secure: bool = False
+    auth_cookie_samesite: str = "lax"
 
     cors_origins: str = "http://localhost:3000"
 

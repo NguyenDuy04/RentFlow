@@ -14,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AuthLayout } from "@/components/layout/auth-layout";
 import { createRegisterSchema, type RegisterInput } from "@/schemas/auth";
 import { useRegister, useSetupStatus } from "@/hooks/use-auth";
-import { getToken, clearToken } from "@/lib/auth";
 import { api, ApiError } from "@/lib/api-client";
 import { useTranslations } from "next-intl";
 
@@ -33,12 +32,10 @@ export default function RegisterPage() {
   });
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return;
     api
       .get("/auth/me")
       .then(() => router.replace("/dashboard"))
-      .catch(() => clearToken());
+      .catch(() => undefined);
   }, [router]);
 
   const {

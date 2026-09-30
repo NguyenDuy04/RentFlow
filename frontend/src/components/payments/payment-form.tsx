@@ -18,10 +18,12 @@ import { useTranslations } from "next-intl";
 export function PaymentForm({
   billId,
   suggestedAmount,
+  defaultMethod = "cash",
   onSuccess,
 }: {
   billId: string;
   suggestedAmount: number;
+  defaultMethod?: "cash" | "bank_transfer";
   onSuccess: () => void;
 }) {
   const t = useTranslations("payments.form");
@@ -44,7 +46,7 @@ export function PaymentForm({
     defaultValues: {
       bill_id: billId,
       amount: suggestedAmount,
-      method: "cash",
+      method: defaultMethod,
       payment_date: new Date().toISOString().slice(0, 10),
       transaction_code: "",
     },

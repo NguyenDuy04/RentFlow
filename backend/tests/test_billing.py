@@ -1,4 +1,5 @@
 import pytest
+from urllib.parse import parse_qs, urlparse
 
 pytestmark = pytest.mark.asyncio
 
@@ -65,8 +66,10 @@ async def test_generate_bill_computes_correct_total(client, auth_headers):
     bills = r.json()
     assert len(bills) == 1
     bill = bills[0]
-    # room 2,500,000 + electricity 50*3500=175,000 + water 8*20,000=160,000
-    # + internet 100,000 + parking 50,000 + cleaning 30,000
+    assert bill["electricity_consumption"] == 50
+    assert bill["electricity_amount"] == 175_000
+    assert bill["water_consumption"] == 8
+    assert bill["water_amount"] == 160_000
     assert bill["total_amount"] == 3_015_000
     assert bill["status"] == "unpaid"
 
@@ -156,6 +159,82 @@ async def test_partial_payment_does_not_mark_bill_paid(client, auth_headers):
     )
     r = await client.get(f"/api/bills/{bill['id']}", headers=auth_headers)
     assert r.json()["status"] == "unpaid"
+
+
+async def test_vietqr_uses_remaining_balance_and_bill_code(client, auth_headers):
+    room = await _setup_room_with_tenant(client, auth_headers)
+    await client.post(
+        "/api/meters",
+        headers=auth_headers,
+        json={
+            "room_id": room["id"], "month": "2026-08",
+            "electricity_old": 0, "electricity_new": 10,
+            "water_old": 0, "water_new": 1,
+        },
+    )
+    bill = (await client.post("/api/bills/generate", headers=auth_headers, json={"month": "2026-08"})).json()[0]
+    await client.put(
+        "/api/payments/bank-account",
+        headers=auth_headers,
+        json={"bank_bin": "970436", "bank_name": "Vietcombank", "account_number": "1234567890", "account_name": "Chu Tro"},
+    )
+    await client.post(
+        "/api/payments",
+        headers=auth_headers,
+        json={"bill_id": bill["id"], "amount": 735000, "method": "bank_transfer"},
+    )
+
+    response = await client.get(f"/api/bills/{bill['id']}/vietqr", headers=auth_headers)
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["amount"] == bill["total_amount"] - 735000
+    assert data["transfer_content"] == bill["bill_code"]
+    assert data["bank_name"] == "Vietcombank"
+    assert data["account_number"] == "1234567890"
+    query = parse_qs(urlparse(data["qr_url"]).query)
+    assert query["amount"] == [str(data["amount"])]
+    assert query["addInfo"] == [bill["bill_code"]]
+
+
+async def test_vietqr_requires_bank_account_settings(client, auth_headers):
+    room = await _setup_room_with_tenant(client, auth_headers)
+    await client.post(
+        "/api/meters",
+        headers=auth_headers,
+        json={
+            "room_id": room["id"], "month": "2026-08",
+            "electricity_old": 0, "electricity_new": 10,
+            "water_old": 0, "water_new": 1,
+        },
+    )
+    bill = (await client.post("/api/bills/generate", headers=auth_headers, json={"month": "2026-08"})).json()[0]
+
+    response = await client.get(f"/api/bills/{bill['id']}/vietqr", headers=auth_headers)
+
+    assert response.status_code == 400
+
+
+async def test_bank_account_settings_can_start_empty_and_be_saved(client, auth_headers):
+    response = await client.get("/api/payments/bank-account", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json()["bank_bin"] == ""
+
+    response = await client.put(
+        "/api/payments/bank-account",
+        headers=auth_headers,
+        json={"bank_bin": "970436", "bank_name": "Vietcombank", "account_number": "123456", "account_name": "  Chu Tro  "},
+    )
+    assert response.status_code == 200
+    assert response.json()["bank_name"] == "Vietcombank"
+    assert response.json()["account_name"] == "CHU TRO"
+
+    invalid = await client.put(
+        "/api/payments/bank-account",
+        headers=auth_headers,
+        json={"bank_bin": "bad", "account_number": "1", "account_name": "A"},
+    )
+    assert invalid.status_code == 422
 
 
 async def test_dashboard_overview_reflects_state(client, auth_headers):

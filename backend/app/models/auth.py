@@ -7,11 +7,6 @@ class LoginRequest(BaseModel):
     remember: bool = False
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
 class RegisterRequest(BaseModel):
     full_name: str = Field(min_length=1)
     email: EmailStr

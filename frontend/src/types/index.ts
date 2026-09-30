@@ -98,6 +98,33 @@ export interface Payment {
   created_at: string;
 }
 
+export interface BankAccountSettings {
+  bank_bin: string;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  updated_at: string | null;
+}
+
+export interface VietQrDetails {
+  amount: number;
+  transfer_content: string;
+  bank_bin: string;
+  bank_name: string;
+  account_number: string;
+  account_name: string;
+  qr_url: string;
+}
+
+export interface VietQrBank {
+  name: string;
+  bin: string;
+  shortName: string;
+  logo: string;
+  transferSupported: number;
+  isTransfer: number;
+}
+
 export interface DashboardOverview {
   total_rooms: number;
   occupied_rooms: number;

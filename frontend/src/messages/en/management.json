@@ -218,6 +218,26 @@
       "recordPayment": "Record payment",
       "exportPdf": "Export PDF",
       "pdfFailed": "Unable to download PDF"
+    },
+    "vietqr": {
+      "generate": "Generate VietQR",
+      "title": "Bank transfer QR",
+      "description": "The tenant scans this code in their banking app and transfers the money. The bill is recorded only after you confirm receipt.",
+      "amount": "Amount due",
+      "bank": "Bank",
+      "accountName": "Account holder",
+      "accountNumber": "Account number",
+      "transferContent": "Transfer description",
+      "copy": "Copy transfer description",
+      "copied": "Transfer description copied",
+      "copyFailed": "Unable to copy transfer description",
+      "openQr": "Open QR image",
+      "imageAlt": "VietQR payment code for this bill",
+      "confirmTransfer": "Confirm receipt",
+      "confirmTitle": "Confirm bank transfer",
+      "confirmDescription": "Verify the bank transaction before recording this payment.",
+      "backToQr": "Back to QR",
+      "error": "Unable to generate this bill's QR. Check the bank account settings."
     }
   },
   "payments": {
@@ -251,6 +271,7 @@
     "description": "Service pricing, personal profile, and security",
     "tabs": {
       "pricing": "Service pricing",
+      "bankAccount": "Receiving account",
       "profile": "Profile",
       "password": "Change password"
     },
@@ -265,6 +286,21 @@
       "other": "Other fee (VND / month)",
       "save": "Save pricing",
       "saved": "Service pricing updated"
+    },
+    "bankAccount": {
+      "title": "Bank account for transfers",
+      "description": "Used to generate VietQR codes for bills. Verify incoming transfers and confirm them manually.",
+      "bank": "Bank",
+      "chooseBank": "Choose a bank",
+      "loadingBanks": "Loading banks...",
+      "banksLoadFailed": "Unable to load the bank list. Try refreshing the page.",
+      "accountNumber": "Account number",
+      "accountName": "Account holder name",
+      "save": "Save account",
+      "saved": "Receiving account updated",
+      "invalidBank": "Select a bank that supports VietQR",
+      "invalidAccountNumber": "Account number must contain up to 20 digits",
+      "invalidAccountName": "Account holder name must be at least 2 characters"
     },
     "profile": {
       "title": "Personal profile",

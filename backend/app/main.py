@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routes import auth, bills, dashboard, meters, payments, pricing, rooms, tenants
 from app.core.config import settings
@@ -28,6 +29,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def validate_request_origin(request: Request, call_next):
+    if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
+        origin = request.headers.get("origin")
+        same_origin = f"{request.url.scheme}://{request.url.netloc}"
+        trusted_origins = {*settings.cors_origin_list, same_origin}
+        if origin and origin not in trusted_origins:
+            return JSONResponse(
+                status_code=403, content={"detail": "Origin không hợp lệ"}
+            )
+    return await call_next(request)
 
 app.include_router(auth.router, prefix="/api")
 app.include_router(rooms.router, prefix="/api")
