@@ -2,9 +2,10 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.deps import get_current_user, object_id_or_404
+from app.api.deps import get_current_user, object_id_or_404, require_permission
+from app.core.permissions import Permission
 from app.db.mongodb import rooms_collection, tenants_collection
-from app.models.room import RoomCreate, RoomPublic, RoomUpdate
+from app.models.room import RoomCreate, RoomPublic, RoomStatusUpdate, RoomUpdate
 from app.models.user import UserInDB
 
 router = APIRouter(prefix="/rooms", tags=["rooms"])
@@ -14,7 +15,7 @@ router = APIRouter(prefix="/rooms", tags=["rooms"])
 async def list_rooms(
     search: str | None = None,
     status: str | None = None,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB = Depends(require_permission(Permission.ROOMS_READ)),
 ):
     query: dict = {}
     if status:
@@ -46,7 +47,7 @@ async def list_rooms(
 
 
 @router.post("", response_model=RoomPublic, status_code=201)
-async def create_room(payload: RoomCreate, current_user: UserInDB = Depends(get_current_user)):
+async def create_room(payload: RoomCreate, current_user: UserInDB = Depends(require_permission(Permission.ROOMS_CREATE))):
     if await rooms_collection.find_one({"room_code": payload.room_code}):
         raise HTTPException(status_code=400, detail="Mã phòng đã tồn tại")
     now = datetime.now(timezone.utc)
@@ -59,7 +60,7 @@ async def create_room(payload: RoomCreate, current_user: UserInDB = Depends(get_
 
 
 @router.get("/{room_id}", response_model=RoomPublic)
-async def get_room(room_id: str, current_user: UserInDB = Depends(get_current_user)):
+async def get_room(room_id: str, current_user: UserInDB = Depends(require_permission(Permission.ROOMS_READ))):
     doc = await _get_room_or_404(room_id)
 
     doc["current_occupants"] = await tenants_collection.count_documents(
@@ -74,7 +75,7 @@ async def get_room(room_id: str, current_user: UserInDB = Depends(get_current_us
 
 @router.put("/{room_id}", response_model=RoomPublic)
 async def update_room(
-    room_id: str, payload: RoomUpdate, current_user: UserInDB = Depends(get_current_user)
+    room_id: str, payload: RoomUpdate, current_user: UserInDB = Depends(require_permission(Permission.ROOMS_UPDATE))
 ):
     oid = object_id_or_404(room_id, "Không tìm thấy phòng")
     await _get_room_or_404(room_id)
@@ -108,8 +109,27 @@ async def update_room(
     return RoomPublic.model_validate(doc)
 
 
+@router.patch("/{room_id}/status", response_model=RoomPublic)
+async def update_room_status(
+    room_id: str,
+    payload: RoomStatusUpdate,
+    current_user: UserInDB = Depends(require_permission(Permission.ROOMS_STATUS_UPDATE)),
+):
+    oid = object_id_or_404(room_id, "Không tìm thấy phòng")
+    await _get_room_or_404(room_id)
+    await rooms_collection.update_one(
+        {"_id": oid},
+        {"$set": {"status": payload.status, "updated_at": datetime.now(timezone.utc)}},
+    )
+    doc = await rooms_collection.find_one({"_id": oid})
+    doc["current_occupants"] = await tenants_collection.count_documents(
+        {"room_id": room_id, "status": "active"}
+    )
+    return RoomPublic.model_validate(doc)
+
+
 @router.delete("/{room_id}", status_code=204)
-async def delete_room(room_id: str, current_user: UserInDB = Depends(get_current_user)):
+async def delete_room(room_id: str, current_user: UserInDB = Depends(require_permission(Permission.ROOMS_DELETE))):
     oid = object_id_or_404(room_id, "Không tìm thấy phòng")
     await _get_room_or_404(room_id)
     active_tenant = await tenants_collection.find_one({"room_id": room_id, "status": "active"})

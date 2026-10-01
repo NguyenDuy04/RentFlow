@@ -1,15 +1,19 @@
 from datetime import datetime
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models.common import PyObjectId
+
+UserRole = Literal["owner", "staff", "tenant"]
 
 
 class UserBase(BaseModel):
     email: EmailStr
     full_name: str
     phone: Optional[str] = None
+    role: UserRole = "owner"
+    tenant_id: Optional[str] = None
 
 
 class UserInDB(UserBase):
@@ -35,3 +39,19 @@ class UserUpdate(BaseModel):
 class ChangePasswordRequest(BaseModel):
     current_password: str
     new_password: str = Field(min_length=6)
+
+
+class StaffAccountCreate(BaseModel):
+    email: EmailStr
+    full_name: str = Field(min_length=1, max_length=120)
+    phone: Optional[str] = None
+    password: str = Field(min_length=8)
+
+
+class TenantAccountCreate(BaseModel):
+    tenant_id: str
+    password: str = Field(min_length=8)
+
+
+class ManagedUserPublic(UserPublic):
+    role: UserRole

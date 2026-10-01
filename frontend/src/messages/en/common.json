@@ -52,7 +52,11 @@
       "meters": "Utilities",
       "billing": "Bills",
       "payments": "Payments",
-      "settings": "Settings"
+      "settings": "Settings",
+      "team": "Team",
+      "audit": "Audit log",
+      "issues": "Issues",
+      "tenantPortal": "Tenant portal"
     },
     "header": {
       "brand": "RentFlow",
@@ -70,6 +74,9 @@
       "meters": "Utilities",
       "payments": "Payments",
       "settings": "Settings",
+      "audit": "Audit",
+      "issues": "Issues",
+      "tenantPortal": "My home",
       "more": "More"
     }
   },

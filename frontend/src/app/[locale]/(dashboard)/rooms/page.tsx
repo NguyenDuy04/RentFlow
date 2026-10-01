@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useRooms } from "@/hooks/use-rooms";
+import { useMe } from "@/hooks/use-auth";
 import { RoomTable } from "@/components/rooms/room-table";
 import { RoomForm } from "@/components/rooms/room-form";
 import { useTranslations } from "next-intl";
@@ -18,6 +19,7 @@ export default function RoomsPage() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const { data: user } = useMe();
   const { data: rooms, isLoading } = useRooms({ search: search || undefined, status: status || undefined });
   const statusFilterOptions = [
     { value: "available", label: t("status.available") },
@@ -32,9 +34,11 @@ export default function RoomsPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
-        <Button onClick={() => setCreateOpen(true)}>
-          <Plus className="h-4 w-4" /> {t("addRoom")}
-        </Button>
+        {user?.role === "owner" && (
+          <Button onClick={() => setCreateOpen(true)}>
+            <Plus className="h-4 w-4" /> {t("addRoom")}
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -60,7 +64,7 @@ export default function RoomsPage() {
         <RoomTable rooms={rooms} isLoading={isLoading} />
       </Card>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog open={createOpen && user?.role === "owner"} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("addRoomTitle")}</DialogTitle>

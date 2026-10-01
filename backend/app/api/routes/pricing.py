@@ -2,7 +2,8 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_permission
+from app.core.permissions import Permission
 from app.db.mongodb import pricing_collection
 from app.models.pricing import PricingConfigPublic, PricingConfigUpdate
 from app.models.user import UserInDB
@@ -20,7 +21,7 @@ DEFAULT_PRICING = {
 
 
 @router.get("", response_model=PricingConfigPublic)
-async def get_pricing(current_user: UserInDB = Depends(get_current_user)):
+async def get_pricing(current_user: UserInDB = Depends(require_permission(Permission.PRICING_READ))):
     doc = await pricing_collection.find_one({})
     if not doc:
         now = datetime.now(timezone.utc)
@@ -30,7 +31,7 @@ async def get_pricing(current_user: UserInDB = Depends(get_current_user)):
 
 
 @router.put("", response_model=PricingConfigPublic)
-async def update_pricing(payload: PricingConfigUpdate, current_user: UserInDB = Depends(get_current_user)):
+async def update_pricing(payload: PricingConfigUpdate, current_user: UserInDB = Depends(require_permission(Permission.PRICING_UPDATE))):
     doc = await pricing_collection.find_one({})
     update_data = {k: v for k, v in payload.model_dump(exclude_unset=True).items()}
     update_data["updated_at"] = datetime.now(timezone.utc)

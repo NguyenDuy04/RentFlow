@@ -2,12 +2,15 @@ export type RoomStatus = "available" | "occupied" | "maintenance";
 export type TenantStatus = "active" | "ended";
 export type BillStatus = "unpaid" | "paid";
 export type PaymentMethod = "cash" | "bank_transfer";
+export type UserRole = "owner" | "staff" | "tenant";
 
 export interface User {
   id: string;
   email: string;
   full_name: string;
   phone: string | null;
+  role: UserRole;
+  tenant_id: string | null;
   created_at: string;
 }
 
@@ -40,6 +43,45 @@ export interface Tenant {
   status: TenantStatus;
   created_at: string;
   updated_at: string;
+  portal_enabled: boolean;
+}
+
+export type IssueCategory = "plumbing" | "electrical" | "appliance" | "other";
+export type IssueStatus = "open" | "in_progress" | "resolved";
+
+export interface MaintenanceIssue {
+  id: string;
+  tenant_id: string;
+  tenant_name: string;
+  room_id: string;
+  room_label: string;
+  title: string;
+  description: string;
+  category: IssueCategory;
+  status: IssueStatus;
+  staff_note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  actor_id: string;
+  actor_name: string;
+  actor_email: string;
+  actor_role: UserRole;
+  action: string;
+  resource: string;
+  ip_address: string | null;
+  created_at: string;
+}
+
+export interface TenantPortalOverview {
+  tenant: Tenant;
+  room: Room | null;
+  bills: Bill[];
+  payments: Payment[];
+  issues: MaintenanceIssue[];
 }
 
 export interface MeterReading {

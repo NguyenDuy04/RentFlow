@@ -36,6 +36,10 @@ class RoomUpdate(BaseModel):
     note: Optional[str] = None
 
 
+class RoomStatusUpdate(BaseModel):
+    status: RoomStatus
+
+
 class RoomPublic(RoomBase):
     id: PyObjectId = Field(validation_alias="_id")
 

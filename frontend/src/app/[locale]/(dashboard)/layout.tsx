@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { Loader2 } from "lucide-react";
 
 import { Sidebar } from "@/components/layout/sidebar";
@@ -12,13 +12,24 @@ import { useMe } from "@/hooks/use-auth";
 
 export default function DashboardGroupLayout({ children }: { children: React.ReactNode }) {
     const router = useRouter();
-    const { isError, isPending } = useMe();
+    const pathname = usePathname();
+    const { data: user, isError, isPending } = useMe();
+    const staffRoutes = ["/dashboard", "/rooms", "/tenants", "/billing", "/payments", "/audit", "/issues"];
+    const staffCanVisit = user?.role !== "staff" || staffRoutes.some((route) => pathname === route || pathname?.startsWith(`${route}/`));
 
     useEffect(() => {
         if (isError) router.replace("/login");
-    }, [isError, router]);
+        else if (user?.role === "tenant" && pathname !== "/tenant") router.replace("/tenant");
+        else if (user && user.role !== "tenant" && pathname === "/tenant") router.replace("/dashboard");
+        else if (user?.role === "staff" && !staffCanVisit) router.replace("/dashboard");
+    }, [isError, pathname, router, staffCanVisit, user]);
 
-    if (isError || isPending) {
+    const roleRedirect = user && (
+        (user.role === "tenant" && pathname !== "/tenant") ||
+        (user.role !== "tenant" && pathname === "/tenant") ||
+        (user.role === "staff" && !staffCanVisit)
+    );
+    if (isError || isPending || roleRedirect) {
         return (
             <div className="flex min-h-screen items-center justify-center">
                 <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

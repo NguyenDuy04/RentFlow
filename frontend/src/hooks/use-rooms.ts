@@ -19,7 +19,8 @@ export function useRooms(params?: { search?: string; status?: string }) {
 export function useCreateRoom() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: RoomInput) => api.post<Room>("/rooms", cleanRoomInput(input)),
+    mutationFn: (input: RoomInput) =>
+      api.post<Room>("/rooms", cleanRoomInput(input)),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rooms"] }),
   });
 }
@@ -38,6 +39,18 @@ export function useDeleteRoom() {
   return useMutation({
     mutationFn: (id: string) => api.delete(`/rooms/${id}`),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["rooms"] }),
+  });
+}
+
+export function useUpdateRoomStatus() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: Room["status"] }) =>
+      api.patch<Room>(`/rooms/${id}/status`, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["rooms"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+    },
   });
 }
 

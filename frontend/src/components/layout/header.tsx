@@ -20,7 +20,7 @@ export function Header() {
   const initial = user?.full_name?.trim()?.[0]?.toUpperCase() || "?";
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-card/95 px-4 backdrop-blur supports-backdrop-filter:bg-card/80 sm:h-16 sm:px-6">
-      <Link href="/dashboard" className="flex items-center gap-2 lg:hidden">
+      <Link href={user?.role === "tenant" ? "/tenant" : "/dashboard"} className="flex items-center gap-2 lg:hidden">
         <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <Building2 className="h-4 w-4" />
         </div>
@@ -37,11 +37,16 @@ export function Header() {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href="/settings">
-                <User className="h-4 w-4" /> {t("profile")} </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
+            {user?.role === "owner" && (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link href="/settings">
+                    <User className="h-4 w-4" /> {t("profile")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+              </>
+            )}
             <DropdownMenuItem destructive onClick={() => logout()}>
               <LogOut className="h-4 w-4" />
               {t("logout")}

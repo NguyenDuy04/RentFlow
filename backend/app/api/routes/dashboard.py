@@ -3,7 +3,8 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, Query
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, require_permission
+from app.core.permissions import Permission
 from app.db.mongodb import bills_collection, payments_collection, rooms_collection, tenants_collection
 from app.models.user import UserInDB
 
@@ -17,7 +18,7 @@ def _clean(doc: dict) -> dict:
 
 
 @router.get("/overview")
-async def get_overview(current_user: UserInDB = Depends(get_current_user)):
+async def get_overview(current_user: UserInDB = Depends(require_permission(Permission.DASHBOARD_READ))):
     total_rooms = await rooms_collection.count_documents({})
     occupied_rooms = await rooms_collection.count_documents({"status": "occupied"})
     vacant_rooms = await rooms_collection.count_documents({"status": "available"})
@@ -52,7 +53,7 @@ async def get_overview(current_user: UserInDB = Depends(get_current_user)):
 
 
 @router.get("/alerts")
-async def get_alerts(current_user: UserInDB = Depends(get_current_user)):
+async def get_alerts(current_user: UserInDB = Depends(require_permission(Permission.DASHBOARD_READ))):
     now = datetime.now(timezone.utc)
     overdue_docs = (
         await bills_collection.find({"status": "unpaid", "due_date": {"$lt": now}})
@@ -84,7 +85,7 @@ async def get_alerts(current_user: UserInDB = Depends(get_current_user)):
 
 @router.get("/revenue-chart")
 async def get_revenue_chart(
-    months: int = Query(6, ge=1, le=24), current_user: UserInDB = Depends(get_current_user)
+    months: int = Query(6, ge=1, le=24), current_user: UserInDB = Depends(require_permission(Permission.DASHBOARD_READ))
 ):
     now = datetime.now(timezone.utc)
     cursor_year, cursor_month = now.year, now.month
@@ -116,7 +117,7 @@ async def get_revenue_chart(
 
 @router.get("/recent-activities")
 async def get_recent_activities(
-    limit: int = Query(10, ge=1, le=50), current_user: UserInDB = Depends(get_current_user)
+    limit: int = Query(10, ge=1, le=50), current_user: UserInDB = Depends(require_permission(Permission.DASHBOARD_READ))
 ):
     activities = []
 

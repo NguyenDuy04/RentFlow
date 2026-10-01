@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { api } from "@/lib/api-client"
+import type { User } from "@/types";
 
 export default function RootPage() {
     const router = useRouter();
@@ -15,8 +16,8 @@ export default function RootPage() {
 
         async function decide() {
             try {
-                await api.get("/auth/me");
-                if (!cancelled) router.replace("/dashboard");
+                const user = await api.get<User>("/auth/me");
+                if (!cancelled) router.replace(user.role === "tenant" ? "/tenant" : "/dashboard");
             } catch {
                 try {
                     const status = await api.get<{ needs_setup: boolean }>("/auth/setup-status");

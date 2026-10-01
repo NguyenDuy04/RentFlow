@@ -109,6 +109,7 @@ async def register(payload: RegisterRequest, response: Response):
         "email": payload.email,
         "full_name": payload.full_name,
         "phone": None,
+        "role": "owner",
         "hashed_password": hash_password(payload.password),
         "created_at": datetime.now(timezone.utc),
     }
@@ -165,6 +166,8 @@ async def get_me(current_user: UserInDB = Depends(get_current_user)):
 
 @router.put("/me", response_model=UserPublic)
 async def update_me(payload: UserUpdate, current_user: UserInDB = Depends(get_current_user)):
+    if current_user.role == "tenant":
+        raise HTTPException(status_code=403, detail="Tài khoản người thuê chỉ có quyền xem hồ sơ")
     update_data = {k: v for k, v in payload.model_dump(exclude_unset=True).items()}
     if update_data:
         await users_collection.update_one({"_id": ObjectId(current_user.id)}, {"$set": update_data})

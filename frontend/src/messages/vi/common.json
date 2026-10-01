@@ -52,7 +52,11 @@
       "meters": "Điện nước",
       "billing": "Hóa đơn",
       "payments": "Thanh toán",
-      "settings": "Cài đặt"
+      "settings": "Cài đặt",
+      "team": "Nhân viên",
+      "audit": "Nhật ký kiểm toán",
+      "issues": "Báo sự cố",
+      "tenantPortal": "Cổng người thuê"
     },
     "header": {
       "brand": "RentFlow",
@@ -70,6 +74,9 @@
       "meters": "Điện nước",
       "payments": "Thanh toán",
       "settings": "Cài đặt",
+      "audit": "Nhật ký",
+      "issues": "Sự cố",
+      "tenantPortal": "Của tôi",
       "more": "Thêm"
     }
   },

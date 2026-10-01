@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { useBills } from "@/hooks/use-bills";
 import { useRooms } from "@/hooks/use-rooms";
+import { useMe } from "@/hooks/use-auth";
 import { BillTable } from "@/components/billing/bill-table";
 import { GenerateBillDialog } from "@/components/billing/generate-bill-dialog";
 import { currentMonth } from "@/lib/utils";
@@ -19,6 +20,7 @@ export default function BillingPage() {
   const [month, setMonth] = useState(currentMonth());
   const [status, setStatus] = useState("");
   const [generateOpen, setGenerateOpen] = useState(false);
+  const { data: user } = useMe();
   const { data: rooms } = useRooms();
   const { data: bills, isLoading } = useBills({ month: month || undefined, status: status || undefined });
 
@@ -35,9 +37,11 @@ export default function BillingPage() {
           <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
           <p className="text-sm text-muted-foreground">{t("description")}</p>
         </div>
-        <Button onClick={() => setGenerateOpen(true)}>
-          <Plus className="h-4 w-4" /> {t("create")}
-        </Button>
+        {user?.role === "owner" && (
+          <Button onClick={() => setGenerateOpen(true)}>
+            <Plus className="h-4 w-4" /> {t("create")}
+          </Button>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row">
@@ -55,7 +59,7 @@ export default function BillingPage() {
         <BillTable bills={bills} isLoading={isLoading} roomMap={roomMap} />
       </Card>
 
-      <GenerateBillDialog open={generateOpen} onOpenChange={setGenerateOpen} />
+      {user?.role === "owner" && <GenerateBillDialog open={generateOpen} onOpenChange={setGenerateOpen} />}
     </div>
   );
 }

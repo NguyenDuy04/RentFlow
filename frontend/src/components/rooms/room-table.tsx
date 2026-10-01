@@ -15,7 +15,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useDeleteRoom } from "@/hooks/use-rooms";
+import { useDeleteRoom, useUpdateRoomStatus } from "@/hooks/use-rooms";
+import { useMe } from "@/hooks/use-auth";
 import { formatCurrency } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
 import type { Room } from "@/types";
@@ -28,6 +29,9 @@ export function RoomTable({ rooms, isLoading }: { rooms: Room[] | undefined; isL
   const [editingRoom, setEditingRoom] = useState<Room | null>(null);
   const [deletingRoom, setDeletingRoom] = useState<Room | null>(null);
   const deleteRoom = useDeleteRoom();
+  const updateRoomStatus = useUpdateRoomStatus();
+  const { data: user } = useMe();
+  const statuses: Room["status"][] = ["available", "occupied", "maintenance"];
 
   const confirmDelete = () => {
     if (!deletingRoom) return;
@@ -94,12 +98,36 @@ export function RoomTable({ rooms, isLoading }: { rooms: Room[] | undefined; isL
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => setEditingRoom(room)}>
-                      <Pencil className="h-4 w-4" /> {t("table.edit")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem destructive onClick={() => setDeletingRoom(room)}>
-                      <Trash2 className="h-4 w-4" /> {t("table.delete")}
-                    </DropdownMenuItem>
+                    {user?.role === "owner" && (
+                      <>
+                        <DropdownMenuItem onClick={() => setEditingRoom(room)}>
+                          <Pencil className="h-4 w-4" /> {t("table.edit")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem destructive onClick={() => setDeletingRoom(room)}>
+                          <Trash2 className="h-4 w-4" /> {t("table.delete")}
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    {(user?.role === "owner" || user?.role === "staff") && (
+                      <>
+                        {user.role === "owner" && <div className="my-1 border-t" />}
+                        {statuses.filter((status) => status !== room.status).map((status) => (
+                          <DropdownMenuItem
+                            key={status}
+                            disabled={updateRoomStatus.isPending}
+                            onClick={() => updateRoomStatus.mutate(
+                              { id: room.id, status },
+                              {
+                                onSuccess: () => toast.success(t("table.statusUpdated")),
+                                onError: (error) => toast.error(error instanceof ApiError ? error.message : common("genericError")),
+                              },
+                            )}
+                          >
+                            {t(`status.${status}`)}
+                          </DropdownMenuItem>
+                        ))}
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>

@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
-import type { Bill, Payment, Room } from "@/types";
+import type { Bill, Payment, Room, Tenant } from "@/types";
 import { useTranslations } from "next-intl";
 
 export function PaymentTable({
@@ -15,12 +15,14 @@ export function PaymentTable({
   isLoading,
   billMap,
   roomMap,
+  tenantMap,
   emptyMessage,
 }: {
   payments: Payment[] | undefined;
   isLoading: boolean;
   billMap: Map<string, Bill>;
   roomMap: Map<string, Room>;
+  tenantMap: Map<string, Tenant>;
   emptyMessage?: string;
 }) {
   const t = useTranslations("payments.table");
@@ -60,6 +62,7 @@ export function PaymentTable({
         {payments.map((p) => {
           const bill = billMap.get(p.bill_id);
           const room = bill ? roomMap.get(bill.room_id) : undefined;
+          const tenant = bill?.tenant_id ? tenantMap.get(bill.tenant_id) : undefined;
           return (
             <TableRow key={p.id}>
               <TableCell className="font-medium">
@@ -71,8 +74,11 @@ export function PaymentTable({
                   "—"
                 )}
               </TableCell>
-              <TableCell>{room ? `${room.room_code} - ${room.name}` : "—"}</TableCell>
-              <TableCell>{formatCurrency(p.amount)}</TableCell>
+              <TableCell>
+                <p>{room ? `${room.room_code} - ${room.name}` : "—"}</p>
+                {tenant && <p className="mt-0.5 text-xs text-muted-foreground">{tenant.full_name}</p>}
+              </TableCell>
+              <TableCell className="font-medium tabular-nums">{formatCurrency(p.amount)}</TableCell>
               <TableCell>
                 <Badge variant="secondary">{methodT(p.method === "bank_transfer" ? "bankTransfer" : "cash")}</Badge>
               </TableCell>

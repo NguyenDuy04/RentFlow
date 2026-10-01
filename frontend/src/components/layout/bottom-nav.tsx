@@ -13,9 +13,14 @@ import {
   Gauge,
   Wallet,
   Settings,
+  ScrollText,
+  Wrench,
+  House,
+  UserRoundCog,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useMe } from "@/hooks/use-auth";
 
 import {
   DropdownMenu,
@@ -73,8 +78,9 @@ function NavIcon({
 export function BottomNav() {
   const pathname = usePathname();
   const t = useTranslations("dashboard.bottomNav");
+  const { data: user } = useMe();
 
-  const PRIMARY_ITEMS = [
+  const ownerPrimaryItems = [
     {
       href: "/dashboard",
       label: t("overview"),
@@ -97,7 +103,7 @@ export function BottomNav() {
     },
   ];
 
-  const MORE_ITEMS = [
+  const ownerMoreItems = [
     {
       href: "/meters",
       label: t("meters"),
@@ -113,7 +119,25 @@ export function BottomNav() {
       label: t("settings"),
       icon: Settings,
     },
+    { href: "/team", label: t("team"), icon: UserRoundCog },
+    { href: "/audit", label: t("audit"), icon: ScrollText },
+    { href: "/issues", label: t("issues"), icon: Wrench },
   ];
+  const staffPrimaryItems = [
+    { href: "/dashboard", label: t("overview"), icon: LayoutDashboard },
+    { href: "/rooms", label: t("rooms"), icon: DoorOpen },
+    { href: "/tenants", label: t("tenants"), icon: Users },
+    { href: "/payments", label: t("payments"), icon: Wallet },
+  ];
+  const staffMoreItems = [
+    { href: "/billing", label: t("billing"), icon: Receipt },
+    { href: "/audit", label: t("audit"), icon: ScrollText },
+    { href: "/issues", label: t("issues"), icon: Wrench },
+  ];
+  const tenantPrimaryItems = [{ href: "/tenant", label: t("tenantPortal"), icon: House }];
+  const tenantMoreItems: typeof ownerMoreItems = [];
+  const PRIMARY_ITEMS = user?.role === "tenant" ? tenantPrimaryItems : user?.role === "staff" ? staffPrimaryItems : ownerPrimaryItems;
+  const MORE_ITEMS = user?.role === "tenant" ? tenantMoreItems : user?.role === "staff" ? staffMoreItems : ownerMoreItems;
 
   const isActive = (href: string) =>
     pathname === href ||
@@ -136,7 +160,7 @@ export function BottomNav() {
         />
       ))}
 
-      <DropdownMenu>
+      {MORE_ITEMS.length > 0 && <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="flex flex-1 flex-col items-center justify-center gap-0.5 py-1.5 active:scale-95 transition-transform">
             <span
@@ -191,7 +215,7 @@ export function BottomNav() {
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
-      </DropdownMenu>
+      </DropdownMenu>}
     </nav>
   );
 }

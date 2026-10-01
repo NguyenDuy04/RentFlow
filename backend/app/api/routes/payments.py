@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from urllib.parse import urlencode
 
-from app.api.deps import get_current_user, object_id_or_404
+from app.api.deps import get_current_user, object_id_or_404, require_permission
+from app.core.permissions import Permission
 from app.db.mongodb import (
     bank_account_settings_collection,
     bills_collection,
@@ -23,7 +24,7 @@ BANK_ACCOUNT_SETTINGS_ID = "primary"
 
 
 @router.get("/bank-account", response_model=BankAccountSettingsPublic)
-async def get_bank_account_settings(current_user: UserInDB = Depends(get_current_user)):
+async def get_bank_account_settings(current_user: UserInDB = Depends(require_permission(Permission.PRICING_READ))):
     doc = await bank_account_settings_collection.find_one({"_id": BANK_ACCOUNT_SETTINGS_ID})
     if not doc:
         return BankAccountSettingsPublic(
@@ -35,7 +36,7 @@ async def get_bank_account_settings(current_user: UserInDB = Depends(get_current
 @router.put("/bank-account", response_model=BankAccountSettingsPublic)
 async def update_bank_account_settings(
     payload: BankAccountSettingsUpdate,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB = Depends(require_permission(Permission.PRICING_UPDATE)),
 ):
     settings = {
         **payload.model_dump(),
@@ -49,7 +50,7 @@ async def update_bank_account_settings(
 
 
 @router.get("", response_model=list[PaymentPublic])
-async def list_payments(bill_id: str | None = None, current_user: UserInDB = Depends(get_current_user)):
+async def list_payments(bill_id: str | None = None, current_user: UserInDB = Depends(require_permission(Permission.PAYMENTS_READ))):
     query: dict = {}
     if bill_id:
         query["bill_id"] = bill_id
@@ -58,7 +59,7 @@ async def list_payments(bill_id: str | None = None, current_user: UserInDB = Dep
 
 
 @router.post("", response_model=PaymentPublic, status_code=201)
-async def create_payment(payload: PaymentCreate, current_user: UserInDB = Depends(get_current_user)):
+async def create_payment(payload: PaymentCreate, current_user: UserInDB = Depends(require_permission(Permission.PAYMENTS_CREATE))):
     bill_oid = object_id_or_404(payload.bill_id, "Không tìm thấy hóa đơn")
     bill = await bills_collection.find_one({"_id": bill_oid})
     if not bill:

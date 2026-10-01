@@ -26,6 +26,8 @@ mongodb_module.pricing_collection = _mock_db["pricing_config"]
 mongodb_module.bills_collection = _mock_db["bills"]
 mongodb_module.payments_collection = _mock_db["payments"]
 mongodb_module.bank_account_settings_collection = _mock_db["bank_account_settings"]
+mongodb_module.audit_logs_collection = _mock_db["audit_logs"]
+mongodb_module.issues_collection = _mock_db["maintenance_issues"]
 mongodb_module.login_attempts_collection = _mock_db["login_attempts"]
 
 from app.core.security import hash_password  # noqa: E402
@@ -40,6 +42,8 @@ ALL_COLLECTIONS = [
     mongodb_module.bills_collection,
     mongodb_module.payments_collection,
     mongodb_module.bank_account_settings_collection,
+    mongodb_module.audit_logs_collection,
+    mongodb_module.issues_collection,
     mongodb_module.login_attempts_collection,
 ]
 

@@ -17,6 +17,8 @@ pricing_collection = db["pricing_config"]
 bills_collection = db["bills"]
 payments_collection = db["payments"]
 bank_account_settings_collection = db["bank_account_settings"]
+audit_logs_collection = db["audit_logs"]
+issues_collection = db["maintenance_issues"]
 login_attempts_collection = db["login_attempts"]
 
 
@@ -34,6 +36,10 @@ async def ensure_indexes() -> None:
         await bills_collection.create_index("bill_code", unique=True)
         await bills_collection.create_index("status")
         await payments_collection.create_index("bill_id")
+        await audit_logs_collection.create_index([("created_at", -1)])
+        await audit_logs_collection.create_index([("actor_id", 1), ("created_at", -1)])
+        await issues_collection.create_index([("tenant_id", 1), ("created_at", -1)])
+        await issues_collection.create_index([("status", 1), ("created_at", -1)])
         await login_attempts_collection.create_index("expires_at", expireAfterSeconds=0)
         logger.info("MongoDB indexes ensured.")
     except Exception as exc:  # noqa: BLE001

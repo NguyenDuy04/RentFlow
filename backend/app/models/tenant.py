@@ -41,6 +41,7 @@ class TenantPublic(TenantBase):
     id: PyObjectId = Field(validation_alias="_id")
     created_at: datetime
     updated_at: datetime
+    portal_enabled: bool = False
 
     model_config = ConfigDict(populate_by_name=True)
 

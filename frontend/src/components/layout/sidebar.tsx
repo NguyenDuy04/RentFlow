@@ -2,8 +2,9 @@
 import { Link } from "@/i18n/navigation";
 import { usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { LayoutDashboard, DoorOpen, Users, Gauge, Receipt, Wallet, Settings, Building2, } from "lucide-react";
+import { LayoutDashboard, DoorOpen, Users, Gauge, Receipt, Wallet, Settings, Building2, ScrollText, Wrench, UserRoundCog, House } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMe } from "@/hooks/use-auth";
 
 export function Sidebar(
   { className, onNavigate, }
@@ -12,7 +13,8 @@ export function Sidebar(
 ) {
   const pathname = usePathname();
   const t = useTranslations("dashboard.sidebar");
-  const NAV_ITEMS = [
+  const { data: user } = useMe();
+  const ownerItems = [
     { href: "/dashboard", label: t("overview"), icon: LayoutDashboard, },
     { href: "/rooms", label: t("rooms"), icon: DoorOpen, },
     { href: "/tenants", label: t("tenants"), icon: Users, },
@@ -20,7 +22,21 @@ export function Sidebar(
     { href: "/billing", label: t("billing"), icon: Receipt, },
     { href: "/payments", label: t("payments"), icon: Wallet, },
     { href: "/settings", label: t("settings"), icon: Settings, },
+    { href: "/team", label: t("team"), icon: UserRoundCog, },
+    { href: "/audit", label: t("audit"), icon: ScrollText, },
+    { href: "/issues", label: t("issues"), icon: Wrench, },
   ];
+  const staffItems = [
+    { href: "/dashboard", label: t("overview"), icon: LayoutDashboard },
+    { href: "/rooms", label: t("rooms"), icon: DoorOpen },
+    { href: "/tenants", label: t("tenants"), icon: Users },
+    { href: "/billing", label: t("billing"), icon: Receipt },
+    { href: "/payments", label: t("payments"), icon: Wallet },
+    { href: "/audit", label: t("audit"), icon: ScrollText },
+    { href: "/issues", label: t("issues"), icon: Wrench },
+  ];
+  const tenantItems = [{ href: "/tenant", label: t("tenantPortal"), icon: House }];
+  const NAV_ITEMS = user?.role === "tenant" ? tenantItems : user?.role === "staff" ? staffItems : ownerItems;
   return (
     <div className={cn("flex h-full flex-col bg-primary text-primary-foreground", className)}>
       <div className="flex h-16 items-center gap-2 px-5">

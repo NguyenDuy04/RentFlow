@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException
 from pymongo.errors import DuplicateKeyError
 
-from app.api.deps import get_current_user, object_id_or_404
+from app.api.deps import get_current_user, object_id_or_404, require_permission
+from app.core.permissions import Permission
 from app.db.mongodb import meters_collection, rooms_collection
 from app.models.meter import MeterReadingCreate, MeterReadingPublic, MeterReadingUpdate
 from app.models.user import UserInDB
@@ -22,7 +23,7 @@ def _with_consumption(doc: dict) -> dict:
 async def list_meters(
     room_id: str | None = None,
     month: str | None = None,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB = Depends(require_permission(Permission.METERS_READ)),
 ):
     query: dict = {}
     if room_id:
@@ -36,7 +37,7 @@ async def list_meters(
 @router.post("", response_model=MeterReadingPublic, status_code=201)
 async def create_meter(
     payload: MeterReadingCreate,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB = Depends(require_permission(Permission.METERS_WRITE)),
 ):
     room = await rooms_collection.find_one(
         {"_id": object_id_or_404(payload.room_id)}
@@ -107,7 +108,7 @@ async def create_meter(
 @router.get("/prefill/{room_id}")
 async def get_meter_prefill(
     room_id: str,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB = Depends(require_permission(Permission.METERS_READ)),
 ):
     room = await rooms_collection.find_one(
         {"_id": object_id_or_404(room_id)}
@@ -141,7 +142,7 @@ async def get_meter_prefill(
 
 @router.put("/{meter_id}", response_model=MeterReadingPublic)
 async def update_meter(
-    meter_id: str, payload: MeterReadingUpdate, current_user: UserInDB = Depends(get_current_user)
+    meter_id: str, payload: MeterReadingUpdate, current_user: UserInDB = Depends(require_permission(Permission.METERS_WRITE))
 ):
     oid = object_id_or_404(meter_id, "Không tìm thấy chỉ số")
     doc = await meters_collection.find_one({"_id": oid})

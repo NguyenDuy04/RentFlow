@@ -2,8 +2,9 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from app.api.deps import get_current_user, object_id_or_404
-from app.db.mongodb import rooms_collection, tenants_collection
+from app.api.deps import get_current_user, object_id_or_404, require_permission
+from app.core.permissions import Permission
+from app.db.mongodb import rooms_collection, tenants_collection, users_collection
 from app.models.tenant import TenantCreate, TenantPublic, TenantUpdate, TransferRoomRequest
 from app.models.user import UserInDB
 
@@ -15,7 +16,7 @@ async def list_tenants(
     search: str | None = None,
     status: str | None = None,
     room_id: str | None = None,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB = Depends(require_permission(Permission.TENANTS_READ)),
 ):
     query: dict = {}
     if status:
@@ -33,7 +34,7 @@ async def list_tenants(
 
 
 @router.post("", response_model=TenantPublic, status_code=201)
-async def create_tenant(payload: TenantCreate, current_user: UserInDB = Depends(get_current_user)):
+async def create_tenant(payload: TenantCreate, current_user: UserInDB = Depends(require_permission(Permission.TENANTS_CREATE))):
     if payload.room_id:
         room = await rooms_collection.find_one(
             {"_id": object_id_or_404(payload.room_id)}
@@ -74,14 +75,14 @@ async def create_tenant(payload: TenantCreate, current_user: UserInDB = Depends(
 
 
 @router.get("/{tenant_id}", response_model=TenantPublic)
-async def get_tenant(tenant_id: str, current_user: UserInDB = Depends(get_current_user)):
+async def get_tenant(tenant_id: str, current_user: UserInDB = Depends(require_permission(Permission.TENANTS_READ))):
     doc = await _get_tenant_or_404(tenant_id)
     return TenantPublic.model_validate(doc)
 
 
 @router.put("/{tenant_id}", response_model=TenantPublic)
 async def update_tenant(
-    tenant_id: str, payload: TenantUpdate, current_user: UserInDB = Depends(get_current_user)
+    tenant_id: str, payload: TenantUpdate, current_user: UserInDB = Depends(require_permission(Permission.TENANTS_UPDATE))
 ):
     oid = object_id_or_404(tenant_id, "Không tìm thấy người thuê")
     await _get_tenant_or_404(tenant_id)
@@ -94,9 +95,20 @@ async def update_tenant(
 
 
 @router.delete("/{tenant_id}", status_code=204)
-async def delete_tenant(tenant_id: str, current_user: UserInDB = Depends(get_current_user)):
+async def delete_tenant(tenant_id: str, current_user: UserInDB = Depends(require_permission(Permission.TENANTS_DELETE))):
     oid = object_id_or_404(tenant_id, "Không tìm thấy người thuê")
-    await _get_tenant_or_404(tenant_id)
+    tenant = await _get_tenant_or_404(tenant_id)
+    room_id = tenant.get("room_id")
+    if room_id and tenant.get("status") == "active":
+        remaining = await tenants_collection.count_documents(
+            {"room_id": room_id, "status": "active", "_id": {"$ne": oid}}
+        )
+        if remaining == 0:
+            await rooms_collection.update_one(
+                {"_id": object_id_or_404(room_id)},
+                {"$set": {"status": "available", "updated_at": datetime.now(timezone.utc)}},
+            )
+    await users_collection.delete_one({"role": "tenant", "tenant_id": tenant_id})
     await tenants_collection.delete_one({"_id": oid})
 
 
@@ -104,7 +116,7 @@ async def delete_tenant(tenant_id: str, current_user: UserInDB = Depends(get_cur
 async def transfer_room(
     tenant_id: str,
     payload: TransferRoomRequest,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB = Depends(require_permission(Permission.TENANTS_UPDATE)),
 ):
     oid = object_id_or_404(tenant_id, "Không tìm thấy người thuê")
     tenant = await _get_tenant_or_404(tenant_id)
@@ -158,7 +170,7 @@ async def transfer_room(
 
 
 @router.post("/{tenant_id}/end-contract", response_model=TenantPublic)
-async def end_contract(tenant_id: str, current_user: UserInDB = Depends(get_current_user)):
+async def end_contract(tenant_id: str, current_user: UserInDB = Depends(require_permission(Permission.TENANTS_UPDATE))):
     oid = object_id_or_404(tenant_id, "Không tìm thấy người thuê")
     tenant = await _get_tenant_or_404(tenant_id)
     now = datetime.now(timezone.utc)

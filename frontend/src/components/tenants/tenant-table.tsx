@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { MoreHorizontal, Pencil, Trash2, Users, ArrowRightLeft, FileX } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Users, ArrowRightLeft, FileX, UserRoundPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useDeleteTenant, useEndContract } from "@/hooks/use-tenants";
+import { useCreateTenantAccount } from "@/hooks/use-access";
+import { useMe } from "@/hooks/use-auth";
 import { useRooms } from "@/hooks/use-rooms";
 import { formatDate } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
@@ -24,6 +26,8 @@ import type { Tenant } from "@/types";
 import { TenantForm } from "@/components/tenants/tenant-form";
 import { TransferRoomDialog } from "@/components/tenants/transfer-room-dialog";
 import { useTranslations } from "next-intl";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function TenantTable({ tenants, isLoading }: { tenants: Tenant[] | undefined; isLoading: boolean }) {
   const t = useTranslations("tenants");
@@ -36,6 +40,10 @@ export function TenantTable({ tenants, isLoading }: { tenants: Tenant[] | undefi
   const [transferringTenant, setTransferringTenant] = useState<Tenant | null>(null);
   const deleteTenant = useDeleteTenant();
   const endContract = useEndContract();
+  const createPortalAccount = useCreateTenantAccount();
+  const { data: user } = useMe();
+  const [portalTenant, setPortalTenant] = useState<Tenant | null>(null);
+  const [portalPassword, setPortalPassword] = useState("");
 
   const confirmDelete = () => {
     if (!deletingTenant) return;
@@ -53,6 +61,22 @@ export function TenantTable({ tenants, isLoading }: { tenants: Tenant[] | undefi
       onSuccess: () => toast.success(t("table.endContractSuccess", { name: tenant.full_name })),
       onError: (err) => toast.error(err instanceof ApiError ? err.message : t("table.endContractFailed")),
     });
+  };
+
+  const handleCreatePortal = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!portalTenant) return;
+    createPortalAccount.mutate(
+      { tenant_id: portalTenant.id, password: portalPassword },
+      {
+        onSuccess: () => {
+          toast.success(t("table.portalCreated"));
+          setPortalTenant(null);
+          setPortalPassword("");
+        },
+        onError: (error) => toast.error(error instanceof ApiError ? error.message : common("genericError")),
+      },
+    );
   };
 
   if (isLoading) {
@@ -111,18 +135,27 @@ export function TenantTable({ tenants, isLoading }: { tenants: Tenant[] | undefi
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => setEditingTenant(tenant)}>
-                        <Pencil className="h-4 w-4" /> {t("table.edit")}
-                      </DropdownMenuItem>
-                      {tenant.status === "active" && (
+                      {user?.role === "owner" && (
                         <>
-                          <DropdownMenuItem onClick={() => setTransferringTenant(tenant)}>
-                            <ArrowRightLeft className="h-4 w-4" /> {t("table.transfer")}
+                          <DropdownMenuItem onClick={() => setEditingTenant(tenant)}>
+                            <Pencil className="h-4 w-4" /> {t("table.edit")}
                           </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleEndContract(tenant)}>
-                            <FileX className="h-4 w-4" /> {t("table.endContract")}
-                          </DropdownMenuItem>
+                          {tenant.status === "active" && (
+                            <>
+                              <DropdownMenuItem onClick={() => setTransferringTenant(tenant)}>
+                                <ArrowRightLeft className="h-4 w-4" /> {t("table.transfer")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEndContract(tenant)}>
+                                <FileX className="h-4 w-4" /> {t("table.endContract")}
+                              </DropdownMenuItem>
+                            </>
+                          )}
                         </>
+                      )}
+                      {(user?.role === "owner" || user?.role === "staff") && tenant.email && !tenant.portal_enabled && (
+                        <DropdownMenuItem onClick={() => setPortalTenant(tenant)}>
+                          <UserRoundPlus className="h-4 w-4" /> {t("table.createPortal")}
+                        </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem destructive onClick={() => setDeletingTenant(tenant)}>
@@ -147,6 +180,43 @@ export function TenantTable({ tenants, isLoading }: { tenants: Tenant[] | undefi
       </Dialog>
 
       <TransferRoomDialog tenant={transferringTenant} onClose={() => setTransferringTenant(null)} />
+
+      <Dialog
+        open={!!portalTenant}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPortalTenant(null);
+            setPortalPassword("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("table.portalTitle", { name: portalTenant?.full_name ?? "" })}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleCreatePortal} className="space-y-4">
+            <p className="text-sm text-muted-foreground">{portalTenant?.email}</p>
+            <div className="space-y-1.5">
+              <Label htmlFor="portal_password">{t("table.portalPassword")}</Label>
+              <Input
+                id="portal_password"
+                type="password"
+                minLength={8}
+                required
+                autoComplete="new-password"
+                value={portalPassword}
+                onChange={(event) => setPortalPassword(event.target.value)}
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button type="submit" disabled={createPortalAccount.isPending}>
+                {createPortalAccount.isPending && <Users className="h-4 w-4 animate-pulse" />}
+                {t("table.createPortal")}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!deletingTenant} onOpenChange={(open) => !open && setDeletingTenant(null)}>
         <DialogContent>

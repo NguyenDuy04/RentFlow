@@ -21,7 +21,7 @@ rentflow/
 │   │   ├── core/           # config (env), JWT, bcrypt
 │   │   ├── db/             # kết nối MongoDB (Motor) + index
 │   │   ├── models/         # Pydantic models (Create/Update/Public) từng entity
-│   │   ├── api/routes/     # auth, rooms, tenants, meters, pricing, bills, payments, dashboard
+│   │   ├── api/routes/     # auth, rooms, tenants, meters, pricing, bills, payments, users, audit, issues, portal
 │   │   ├── services/       # billing.py (tính hóa đơn), pdf.py (xuất PDF tiếng Việt)
 │   │   └── assets/fonts/   # Noto Sans (Regular + Bold) — hỗ trợ đầy đủ dấu tiếng Việt trong PDF
 │   ├── scripts/seed.py     # tạo tài khoản chủ trọ đầu tiên
@@ -110,7 +110,7 @@ Mở `http://localhost:3000`.
 ```bash
 cd backend
 pip install -r requirements-dev.txt
-pytest tests/ -v
+PYTHONPATH=. pytest tests/ -v
 ```
 
 Bộ test dùng MongoDB giả lập trong bộ nhớ (`mongomock-motor`) nên không cần MongoDB thật để chạy test.
@@ -132,23 +132,25 @@ Bộ test dùng MongoDB giả lập trong bộ nhớ (`mongomock-motor`) nên kh
 | ------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | Authentication (login, remember me, profile, đổi mật khẩu)                                                                | ✅         |
 | Room Management (CRUD, tìm kiếm, chặn xóa phòng đang có người thuê)                                                       | ✅         |
-| Tenant Management (CRUD, chuyển phòng, kết thúc hợp đồng, tự động cập nhật trạng thái phòng)                              | ✅         |
+| Tenant Management (hồ sơ, portal riêng, phân quyền theo Owner/Staff/Tenant)                                               | ✅         |
 | Meter Reading (nhập chỉ số, auto-fill từ tháng trước, tự tính tiêu thụ, lưu lịch sử)                                      | ✅         |
 | Billing (tự động tính tiền phòng + điện + nước + phí dịch vụ, chặn tạo trùng, xuất PDF tiếng Việt có dấu)                 | ✅         |
 | Payment (ghi nhận thanh toán, VietQR, xác nhận chuyển khoản thủ công, thanh toán một phần, lịch sử)                       | ✅         |
+| Access Control (Owner/Staff/Tenant, backend RBAC, audit log, báo cáo sự cố phòng)                                         | ✅         |
 | Dashboard (overview cards, cảnh báo quá hạn/sắp hết hạn HĐ/đang bảo trì, biểu đồ doanh thu 6/12 tháng, hoạt động gần đây) | ✅         |
 
-Các mục **không bắt buộc trong MVP** theo spec (Email, QR Payment, SMS, AI Features, Multi-Tenant System) chưa được triển khai, đúng như phạm vi đề ra.
+Các mục chưa triển khai gồm thông báo Email/SMS, tự động đối soát ngân hàng, AI Features và quản lý nhiều cơ sở cho cùng một tài khoản.
 
 ---
 
 ## 5. Một số quyết định thiết kế cần lưu ý
 
-- **Xác thực chủ trọ**: RentFlow là hệ thống single-tenant (một tài khoản chủ trọ duy nhất). Tài khoản đầu tiên có thể tạo bằng **một trong hai cách**: (1) chạy `scripts/seed.py`, hoặc (2) mở `/register` trên frontend — đây là màn "thiết lập lần đầu" kiểu WordPress/Nextcloud, chỉ hoạt động khi hệ thống _chưa có_ tài khoản nào (`GET /api/auth/setup-status`); sau khi đã có một tài khoản, `POST /api/auth/register` luôn trả về 403. Không có đăng ký công khai nhiều người dùng.
+- **Vai trò và quyền**: tài khoản đầu tiên là **Owner** (có thể tạo bằng `scripts/seed.py` hoặc `/register`). Owner toàn quyền, quản lý/xóa Staff và xem audit log. Staff xem dashboard/phòng/người thuê/hóa đơn/thanh toán, thêm/xóa hồ sơ người thuê, đổi trạng thái phòng, ghi nhận payment, xử lý sự cố và xem audit; Staff không sửa giá, chỉ số điện nước, nội dung phòng hay tạo hóa đơn. Tenant được Owner/Staff cấp tài khoản từ hồ sơ người thuê; Tenant chỉ xem portal và dữ liệu của mình, lấy QR thanh toán, gửi báo cáo sự cố. Tenant không thể tự xác nhận đã nhận tiền.
+- **Audit log**: ghi lại actor, role, method/resource, thời gian và IP cho các thao tác ghi thành công đã xác thực. Owner và Staff được đọc log; không có API sửa/xóa log.
 - **Token lưu ở đâu**: JWT được lưu trong cookie `HttpOnly`, `SameSite=Lax`; JavaScript không thể đọc token. Cookie chỉ tồn tại trong phiên trình duyệt nếu không chọn "Ghi nhớ đăng nhập", và có hạn 30 ngày nếu chọn. Khi triển khai frontend/backend trên hai site khác nhau, đặt `AUTH_COOKIE_SAMESITE=none` và `AUTH_COOKIE_SECURE=true` trên backend; luôn bật `AUTH_COOKIE_SECURE=true` khi backend dùng HTTPS.
 - **Hạn thanh toán hóa đơn**: mặc định 10 ngày kể từ ngày tạo hóa đơn (`DUE_DAYS` trong `backend/app/api/routes/bills.py`) — chỉnh lại nếu chủ trọ có quy định khác.
 - **Doanh thu tháng hiện tại** trên dashboard: tính theo _tiền đã thực thu_ (tổng các khoản `Payment` trong tháng), không phải tổng hóa đơn đã tạo — phản ánh dòng tiền thực tế.
 - **"Quá hạn"** không phải một trạng thái lưu trong DB mà được tính động (`unpaid` + qua `due_date`) — luôn chính xác theo thời gian thực, không cần cron job.
-- **VietQR**: nhập mã BIN 6 số, số tài khoản và tên chủ tài khoản trong **Cài đặt → Tài khoản nhận tiền**. Tại chi tiết bill chưa thanh toán, chọn **Tạo VietQR** rồi gửi ảnh QR cho khách; khách tự chuyển khoản với số tiền và mã bill được điền sẵn. Chủ trọ cần kiểm tra giao dịch trong ứng dụng ngân hàng và chọn **Xác nhận đã nhận tiền** để ghi payment. QR được tạo qua dịch vụ ảnh `img.vietqr.io`; không có webhook hay tự động đối soát.
+- **VietQR**: chọn ngân hàng trong danh sách VietQR tại **Cài đặt → Tài khoản nhận tiền** (BIN được tra tự động), sau đó nhập số tài khoản và tên chủ tài khoản. Tại bill chưa thanh toán, chọn **Tạo VietQR** rồi gửi ảnh QR cho khách; khách tự chuyển khoản với số tiền còn nợ và mã bill được điền sẵn. Owner/Staff đối chiếu giao dịch trong ứng dụng ngân hàng rồi ghi nhận payment. QR được tạo qua dịch vụ ảnh `img.vietqr.io`; không có webhook hay tự động đối soát.
 - **Phòng nhiều người ở chung**: `max_occupants` được lưu nhưng chưa enforce giới hạn số người thuê/phòng khi thêm người thuê mới — trạng thái phòng (`occupied`/`available`) tự cập nhật dựa trên còn tenant đang active hay không.
 - **Điều hướng responsive**: màn hình `lg` (≥1024px) trở lên dùng sidebar cố định bên trái; dưới `lg` (điện thoại, tablet đứng) dùng bottom navigation cố định (4 mục chính + nút "Thêm") để thao tác bằng ngón cái thuận tiện hơn menu trượt.

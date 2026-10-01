@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDownloadBillPdf, useUpdateBillStatus } from "@/hooks/use-bills";
+import { useMe } from "@/hooks/use-auth";
 import { VietQrDialog } from "@/components/billing/vietqr-dialog";
 import { formatCurrency, formatDate, monthLabel } from "@/lib/utils";
 import { ApiError } from "@/lib/api-client";
@@ -29,6 +30,7 @@ export function BillTable({
   const common = useTranslations("common");
   const downloadPdf = useDownloadBillPdf();
   const updateStatus = useUpdateBillStatus();
+  const { data: user } = useMe();
   const [vietQrBillId, setVietQrBillId] = useState<string | null>(null);
 
   const markPaid = (bill: Bill) => {
@@ -111,9 +113,11 @@ export function BillTable({
                         <QrCode className="h-4 w-4" />
                         {t("vietqr.generate")}
                       </Button>
-                      <Button variant="ghost" size="icon" title={t("table.markPaid")} onClick={() => markPaid(bill)}>
-                        <CheckCircle2 className="h-4 w-4" />
-                      </Button>
+                      {user?.role === "owner" && (
+                        <Button variant="ghost" size="icon" title={t("table.markPaid")} onClick={() => markPaid(bill)}>
+                          <CheckCircle2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </>
                   )}
                   <Button variant="ghost" size="icon" title={t("table.downloadPdf")} onClick={() => handleDownload(bill)}>

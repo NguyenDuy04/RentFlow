@@ -6,7 +6,8 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
 
-from app.api.deps import get_current_user, object_id_or_404
+from app.api.deps import get_current_user, object_id_or_404, require_permission
+from app.core.permissions import Permission, has_permission
 from app.db.mongodb import (
     bank_account_settings_collection,
     bills_collection,
@@ -47,7 +48,7 @@ async def list_bills(
     month: str | None = None,
     status: str | None = None,
     room_id: str | None = None,
-    current_user: UserInDB = Depends(get_current_user),
+    current_user: UserInDB = Depends(require_permission(Permission.BILLS_READ)),
 ):
     query: dict = {}
     if month:
@@ -61,7 +62,7 @@ async def list_bills(
 
 
 @router.get("/{bill_id}", response_model=BillPublic)
-async def get_bill(bill_id: str, current_user: UserInDB = Depends(get_current_user)):
+async def get_bill(bill_id: str, current_user: UserInDB = Depends(require_permission(Permission.BILLS_READ))):
     doc = await _get_bill_or_404(bill_id)
     return BillPublic.model_validate(_with_overdue(doc))
 
@@ -69,6 +70,11 @@ async def get_bill(bill_id: str, current_user: UserInDB = Depends(get_current_us
 @router.get("/{bill_id}/vietqr", response_model=VietQrResponse)
 async def get_bill_vietqr(bill_id: str, current_user: UserInDB = Depends(get_current_user)):
     bill = await _get_bill_or_404(bill_id)
+    if current_user.role == "tenant":
+        if not current_user.tenant_id or bill.get("tenant_id") != current_user.tenant_id:
+            raise HTTPException(status_code=404, detail="Không tìm thấy hóa đơn")
+    elif not has_permission(current_user.role, Permission.PAYMENTS_QR):
+        raise HTTPException(status_code=403, detail="Bạn không có quyền thực hiện thao tác này")
     bank = await bank_account_settings_collection.find_one({"_id": "primary"})
     if not bank:
         raise HTTPException(status_code=400, detail="Chưa cấu hình tài khoản nhận tiền")
@@ -108,7 +114,7 @@ async def get_bill_vietqr(bill_id: str, current_user: UserInDB = Depends(get_cur
 
 
 @router.post("/generate", response_model=list[BillPublic], status_code=201)
-async def generate_bills(payload: GenerateBillRequest, current_user: UserInDB = Depends(get_current_user)):
+async def generate_bills(payload: GenerateBillRequest, current_user: UserInDB = Depends(require_permission(Permission.BILLS_CREATE))):
     pricing = await pricing_collection.find_one({})
     if not pricing:
         raise HTTPException(status_code=400, detail="Chưa cấu hình bảng giá dịch vụ. Vào Cài đặt để thiết lập.")
@@ -165,7 +171,7 @@ async def generate_bills(payload: GenerateBillRequest, current_user: UserInDB = 
 
 @router.put("/{bill_id}/status", response_model=BillPublic)
 async def update_bill_status(
-    bill_id: str, payload: BillStatusUpdate, current_user: UserInDB = Depends(get_current_user)
+    bill_id: str, payload: BillStatusUpdate, current_user: UserInDB = Depends(require_permission(Permission.BILLS_UPDATE))
 ):
     oid = object_id_or_404(bill_id, "Không tìm thấy hóa đơn")
     await _get_bill_or_404(bill_id)
@@ -175,7 +181,7 @@ async def update_bill_status(
 
 
 @router.get("/{bill_id}/pdf")
-async def get_bill_pdf(bill_id: str, current_user: UserInDB = Depends(get_current_user)):
+async def get_bill_pdf(bill_id: str, current_user: UserInDB = Depends(require_permission(Permission.BILLS_READ))):
     doc = await _get_bill_or_404(bill_id)
     room = await rooms_collection.find_one({"_id": object_id_or_404(doc["room_id"])})
     tenant = None
