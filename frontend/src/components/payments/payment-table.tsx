@@ -15,11 +15,13 @@ export function PaymentTable({
   isLoading,
   billMap,
   roomMap,
+  emptyMessage,
 }: {
   payments: Payment[] | undefined;
   isLoading: boolean;
   billMap: Map<string, Bill>;
   roomMap: Map<string, Room>;
+  emptyMessage?: string;
 }) {
   const t = useTranslations("payments.table");
   const methodT = useTranslations("payments.method");
@@ -37,7 +39,7 @@ export function PaymentTable({
     return (
       <div className="flex flex-col items-center gap-2 py-14 text-center text-muted-foreground">
         <Wallet className="h-8 w-8" />
-        <p>{t("empty")}</p>
+        <p>{emptyMessage || t("empty")}</p>
       </div>
     );
   }

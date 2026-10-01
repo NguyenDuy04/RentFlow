@@ -243,6 +243,16 @@
   "payments": {
     "title": "Thanh toán",
     "description": "Lịch sử tất cả các khoản thanh toán đã ghi nhận",
+    "filters": {
+      "search": "Tìm mã hóa đơn, phòng, mã giao dịch",
+      "month": "Lọc theo tháng",
+      "method": "Lọc theo phương thức",
+      "allMethods": "Tất cả phương thức"
+    },
+    "summary": {
+      "count": "Số giao dịch",
+      "total": "Tổng tiền đã nhận"
+    },
     "method": {
       "cash": "Tiền mặt",
       "bankTransfer": "Chuyển khoản"
@@ -258,6 +268,7 @@
     },
     "table": {
       "empty": "Chưa có thanh toán nào được ghi nhận.",
+      "noResults": "Không tìm thấy giao dịch phù hợp.",
       "bill": "Hóa đơn",
       "room": "Phòng",
       "amount": "Số tiền",

@@ -243,6 +243,16 @@
   "payments": {
     "title": "Payments",
     "description": "History of all recorded payments",
+    "filters": {
+      "search": "Search bill, room, or transaction code",
+      "month": "Filter by month",
+      "method": "Filter by method",
+      "allMethods": "All methods"
+    },
+    "summary": {
+      "count": "Transactions",
+      "total": "Total received"
+    },
     "method": {
       "cash": "Cash",
       "bankTransfer": "Bank transfer"
@@ -258,6 +268,7 @@
     },
     "table": {
       "empty": "No payments have been recorded.",
+      "noResults": "No matching transactions found.",
       "bill": "Bill",
       "room": "Room",
       "amount": "Amount",

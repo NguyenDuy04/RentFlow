@@ -77,7 +77,7 @@ export function BillTable({
           <TableHead>{t("table.total")}</TableHead>
           <TableHead>{t("table.dueDate")}</TableHead>
           <TableHead>{t("table.status")}</TableHead>
-          <TableHead className="w-48" />
+          <TableHead className="w-48"></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
